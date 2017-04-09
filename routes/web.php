@@ -24,7 +24,7 @@ $app->post('/hook', function (\Illuminate\Http\Request $request) use ($app) {
     $param = preg_match("/\/\w+ (\w+)/",$update['message']['text']);
 
 // compose reply
-    $reply =  "你".$command."了".$param;
+    $reply =  $update['message']['text'];
 
 // send reply
     $sendto =$api_url."sendmessage?chat_id=".$chatID."&text=".$reply;
