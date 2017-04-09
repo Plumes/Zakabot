@@ -15,21 +15,25 @@ $app->get('/', function () use ($app) {
     return $app->version();
 });
 
-$app->post('/hook', function (\Illuminate\Http\Request $request) use ($app) {
-    $api_url = "https://api.telegram.org/bot372178022:AAErVXV1vzhxF-tSgVgtwYzGe1DOzbXDSbg/";
+$app->post('/hook', function () use ($app) {
     $content = file_get_contents("php://input");
     $update = json_decode($content, true);
-    $chatID = $update["message"]["chat"]["id"];
     preg_match("/\/(\w+)/", $update['message']['text'], $matches);
+    if(!isset($matches[1])) {
+        return "success";
+    }
     $command = $matches[1];
-    preg_match("/\/\w+ (\w+)/",$update['message']['text'], $matches);
-    $param = $matches[1];
+    switch ($command) {
+        case "start":
+            $cmd_class_name = "Start";
+            break;
+        default:
+            $cmd_class_name = "";
+            break;
+    }
 
-// compose reply
-    $reply =  "你".$command."了".$param;
+    $className = 'App\\Http\\TGCommands\\' . $cmd_class_name;
+    $cmd_handler =  new $className;
+    return $cmd_handler->handle($update);
 
-// send reply
-    $sendto =$api_url."sendmessage?chat_id=".$chatID."&text=".$reply;
-    file_get_contents($sendto);
-    return "success";
 });
