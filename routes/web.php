@@ -20,9 +20,11 @@ $app->post('/hook', function (\Illuminate\Http\Request $request) use ($app) {
     $content = file_get_contents("php://input");
     $update = json_decode($content, true);
     $chatID = $update["message"]["chat"]["id"];
+    $command = preg_match("/\/(\w+)/", $update['message']['text']);
+    $param = preg_match("/\/\w+ (\w+)/",$update['message']['text']);
 
 // compose reply
-    $reply =  "12345";
+    $reply =  "你".$command."了".$param;
 
 // send reply
     $sendto =$api_url."sendmessage?chat_id=".$chatID."&text=".$reply;
