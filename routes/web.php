@@ -14,3 +14,10 @@
 $app->get('/', function () use ($app) {
     return $app->version();
 });
+
+$app->post('/hook', function (\Illuminate\Http\Request $request) use ($app) {
+    $entityBody = $request->getContent();
+    var_dump($entityBody);
+    file_put_contents('test.txt', $entityBody);
+    return "123";
+});
