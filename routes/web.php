@@ -16,8 +16,16 @@ $app->get('/', function () use ($app) {
 });
 
 $app->post('/hook', function (\Illuminate\Http\Request $request) use ($app) {
-    $entityBody = $request->getContent();
-    var_dump($entityBody);
-    file_put_contents('test.txt', $entityBody);
-    return "123";
+    $api_url = "https://api.telegram.org/bot372178022:AAErVXV1vzhxF-tSgVgtwYzGe1DOzbXDSbg/";
+    $content = file_get_contents("php://input");
+    $update = json_decode($content, true);
+    $chatID = $update["message"]["chat"]["id"];
+
+// compose reply
+    $reply =  "12345";
+
+// send reply
+    $sendto =$api_url."sendmessage?chat_id=".$chatID."&text=".$reply;
+    file_get_contents($sendto);
+    return "success";
 });
