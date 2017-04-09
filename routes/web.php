@@ -21,9 +21,9 @@ $app->post('/hook', function (\Illuminate\Http\Request $request) use ($app) {
     $update = json_decode($content, true);
     $chatID = $update["message"]["chat"]["id"];
     preg_match("/\/(\w+)/", $update['message']['text'], $matches);
-    $command = $matches[0];
+    $command = $matches[1];
     preg_match("/\/\w+ (\w+)/",$update['message']['text'], $matches);
-    $param = $matches[0];
+    $param = $matches[1];
 
 // compose reply
     $reply =  "你".$command."了".$param;
