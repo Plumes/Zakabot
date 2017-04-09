@@ -25,18 +25,18 @@ $app->post('/hook', function () use ($app) {
     $command = $matches[1];
     switch ($command) {
         case "start":
-            $cmd_class_name = "Start";
+            $cmd_func_name = "start";
             break;
         case "sub":
-            $cmd_class_name = "Subscribe";
+            $cmd_func_name = "subscribe";
             break;
         default:
-            $cmd_class_name = "";
+            $cmd_func_name = "";
             break;
     }
-
-    $className = 'App\\Http\\TGCommands\\' . $cmd_class_name;
-    $cmd_handler =  new $className;
-    return $cmd_handler->handle($update);
-
+    $webhook_controller = new App\Http\Controllers\WebhookController();
+    if(method_exists($webhook_controller, $cmd_func_name)) {
+        return $webhook_controller->$cmd_func_name($update);
+    }
+    return "error";
 });
