@@ -2,7 +2,9 @@
 
 namespace App\Console;
 
+use Faker\Provider\DateTime;
 use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Support\Facades\DB;
 use Laravel\Lumen\Console\Kernel as ConsoleKernel;
 
 class Kernel extends ConsoleKernel
@@ -25,5 +27,28 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         //
+        $schedule->call(function () {
+            $file_content = "";
+            $content = file_get_contents("http://www.keyakizaka46.com/s/k46o/diary/member/list?ima=0000");
+            preg_match("/blogUpdate = (\[.*\])/s", $content, $matches);
+            $result = $matches[1];
+            $result = preg_replace("/\n/s", "", $result);
+            $result = preg_replace("/member/", "\"member\"", $result);
+            $result = preg_replace("/update/", "\"update\"", $result);
+            $result = json_decode($result, true);
+            $member_last_post_list = DB::table('kyzk46_members')->pluck('last_post_at');
+            foreach ($result as $v) {
+                preg_match('/(.*)\+/', $v['update'], $matches);
+                $current_update_at = $matches[1];
+                $current_update_at = preg_replace('/T/',' ', $current_update_at);
+
+                if(isset($member_last_post_list[intval($v['member'])-1]) && $current_update_at>$member_last_post_list[intval($v['member'])-1]) {
+                    $file_content .= $v['member']." ".$current_update_at." ".$member_last_post_list[intval($v['member'])-1]."\n";
+
+                }
+
+            }
+            file_put_contents('test.txt', $file_content);
+        })->everyMinute();
     }
 }
