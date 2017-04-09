@@ -27,6 +27,9 @@ $app->post('/hook', function () use ($app) {
         case "start":
             $cmd_class_name = "Start";
             break;
+        case "sub":
+            $cmd_class_name = "Subscribe";
+            break;
         default:
             $cmd_class_name = "";
             break;
