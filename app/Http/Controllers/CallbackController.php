@@ -57,30 +57,27 @@ class CallbackController extends Controller
         } else {
             $reply = "操作出现问题, 请稍后重试";
         }
-
+        $tg_api->sendMessage($fan->chat_id, ['text'=>$reply]);
         return $tg_api->answerCallbackQuery($this->callback_query_id, ['text'=>$reply]);
     }
 
-    public function unsubscribe() {
-        preg_match("/\/\w+ (\w+)/",$this->update['message']['text'], $matches);
-        if(!isset($matches[1])) {
-            $reply = "无法识别";
-        } else {
-            $param = $matches[1];
-            $member = DB::table('kyzk46_members')->where('id', intval($param))->first();
-            if (empty($member)) {
-                $reply = "错误指令";
-                return $this->sendMessage($reply);
-            }
+    public function unsubscribe($member_id) {
+        $tg_api = new TelegramAPI();
 
-            DB::table('idol_fans_relation')
-                ->where('chat_id', $this->chat_id)
-                ->where('member_id', $member->id)
-                ->delete();
-
-            $reply = "你成功退订了 ".$member->name." 的日记";
-
+        $member = DB::table('kyzk46_members')->where('id', intval($member_id))->first();
+        $fan = DB::table('fans')->where('telegram_user_id', $this->tg_user_id)->first();
+        if(!$member || !$fan) {
+            return $tg_api->answerCallbackQuery($this->callback_query_id);
         }
-        return $this->sendMessage($reply);
+
+        DB::table('idol_fans_relation')
+            ->where('fan_id', $fan->id)
+            ->where('member_id', $member->id)
+            ->delete();
+
+        $reply = "你成功退订了 ".$member->name." 的日记";
+
+        $tg_api->sendMessage($fan->chat_id, ['text'=>$reply]);
+        return $tg_api->answerCallbackQuery($this->callback_query_id, ['text'=>$reply]);
     }
 }
