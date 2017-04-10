@@ -3,6 +3,7 @@
 namespace App\Console;
 
 use App\Jobs\getLatestPostJob;
+use Carbon\Carbon;
 use Faker\Provider\DateTime;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\DB;
