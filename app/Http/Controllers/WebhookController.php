@@ -89,15 +89,14 @@ class WebhookController extends Controller
                 $reply = "错误指令";
                 return $this->sendMessage($reply);
             }
-            $result = DB::table('idol_fans_relation')
+
+            DB::table('idol_fans_relation')
                 ->where('chat_id', $this->chat_id)
                 ->where('member_id', $member->id)
                 ->delete();
-            if($result===true) {
-                $reply = "你成功退订了 ".$member->name." 的日记";
-            } else {
-                $reply = "操作出现问题, 请稍后重试";
-            }
+
+            $reply = "你成功退订了 ".$member->name." 的日记";
+
         }
         return $this->sendMessage($reply);
     }
