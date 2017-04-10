@@ -49,15 +49,18 @@ class getLatestPostJob extends Job
         $content_html = preg_replace('/<\/div>/', '\n', $content_html);
         $content_html = preg_replace('/<br\/>/', '\n', $content_html);
         $post_time = trim($xpath->query("div[@class='box-bottom']/ul/li", $article)->item(0)->textContent);
+        $now = date('Y-m-d H:i:s');
         DB::table('posts')->insert([
                 'member_id' => intval($this->member_id),
                 'title' => $title,
                 'url' => 'http://www.keyakizaka46.com'.$post_url,
                 'content' => $content_html,
-                'posted_at' => $post_time
+                'posted_at' => $post_time,
+                'created_at'=>$now,
+                'updated_at'=>$now
             ]
         );
-        DB::table('kyzk46_members')->where('id',intval($this->member_id))->update(['last_post_at'=>$post_time]);
+        DB::table('kyzk46_members')->where('id',intval($this->member_id))->update(['last_post_at'=>$post_time,'updated_at'=>$now]);
         return true;
     }
 }

@@ -34,6 +34,7 @@ class WebhookController extends Controller
     public function subscribe() {
 
         preg_match("/\/\w+ (\w+)/",$this->update['message']['text'], $matches);
+        $now = Date('Y-m-d H:i:s');
         if(!isset($matches[1])) {
             $reply = "无法识别";
         } else {
@@ -51,7 +52,9 @@ class WebhookController extends Controller
             if(empty($fan)) {
                 $fan_id = DB::table('fans')->insert([
                     'chat_id'=>$this->chat_id,
-                    'username'=>$this->update['message']['from']['username']
+                    'username'=>$this->update['message']['from']['username'],
+                    'created_at'=>$now,
+                    'updated_at'=>$now
                 ]);
             } else {
                 $fan_id = $fan->id;
@@ -61,7 +64,9 @@ class WebhookController extends Controller
                 $result = DB::table('idol_fans_relation')->insert([
                     'fan_id'=>$fan_id,
                     'chat_id'=>$this->chat_id,
-                    'member_id'=>intval($param)
+                    'member_id'=>intval($param),
+                    'created_at'=>$now,
+                    'updated_at'=>$now
                 ]);
             }
             if($result===true) {

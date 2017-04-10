@@ -30,6 +30,9 @@ $app->post('/hook', function () use ($app) {
         case "sub":
             $cmd_func_name = "subscribe";
             break;
+        case "unsub":
+            $cmd_func_name = "unsubscribe";
+            break;
         default:
             $cmd_func_name = "";
             break;
