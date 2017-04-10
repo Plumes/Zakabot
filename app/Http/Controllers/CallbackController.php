@@ -20,12 +20,14 @@ class CallbackController extends Controller
      */
     private $update;
     private $callback_query_id;
+    private $chat_id;
 
     public function __construct($update = false)
     {
         //
         $this->update = $update;
         $this->callback_query_id = $this->update['callback_query']['id'];
+        $this->chat_id = $this->update["message"]["chat"]["id"];
     }
 
     public function subscribe($member_id) {

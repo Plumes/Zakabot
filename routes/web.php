@@ -44,6 +44,7 @@ $app->post('/hook', function () use ($app) {
             return $webhook_controller->$cmd_func_name();
         }
     } elseif (isset($update['callback_query'])) {
+        \Illuminate\Support\Facades\Log::info(json_encode($update));
         if(isset($update['callback_query']['data'])) {
             preg_match('/(\w+)@(\w+)/', $update['callback_query']['data'], $matches);
             if(count($matches)==3) {
