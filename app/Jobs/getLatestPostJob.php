@@ -44,6 +44,7 @@ class getLatestPostJob extends Job
         $title_node = $xpath->query("div[@class='innerHead']/div[@class='box-ttl']", $article)->item(0);
         $title = trim($xpath->query('h3/a', $title_node)->item(0)->nodeValue);
         $post_url = $xpath->query('h3/a/@href', $title_node)->item(0)->nodeValue;
+        $post_url = "http://www.keyakizaka46.com".$post_url;
         $member_name = trim($xpath->query('p', $title_node)->item(0)->nodeValue);
         $content = $xpath->query("div[@class='box-article']", $article)->item(0);
         $content_html = $dom->saveXML($content);

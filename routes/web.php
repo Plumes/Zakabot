@@ -18,6 +18,9 @@ $app->get('/', function () use ($app) {
 $app->post('/hook', function () use ($app) {
     $content = file_get_contents("php://input");
     $update = json_decode($content, true);
+    if(!isset($update['message']) || !isset($update['message']['text'])) {
+        return "unknown command";
+    }
     preg_match("/\/(\w+)/", $update['message']['text'], $matches);
     if(!isset($matches[1])) {
         return "success";
