@@ -40,7 +40,7 @@ class WebhookController extends Controller
             ]);
         }
         $tg_api = new TelegramAPI();
-        $reply =  ['text'=>"欢迎使用"];
+        $reply =  ['text'=>"欢迎使用\n/sublist 查看未订阅的成员列表\n/unsublist 查看已订阅的成员列表"];
         return $tg_api->sendMessage($this->chat_id, $reply);
     }
 
