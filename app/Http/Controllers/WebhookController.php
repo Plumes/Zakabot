@@ -9,6 +9,7 @@ namespace App\Http\Controllers;
 
 use App\Libraries\TelegramAPI;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class WebhookController extends Controller
 {
