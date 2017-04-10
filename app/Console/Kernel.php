@@ -2,6 +2,7 @@
 
 namespace App\Console;
 
+use App\Jobs\getLatestPostJob;
 use Faker\Provider\DateTime;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\DB;
@@ -42,13 +43,11 @@ class Kernel extends ConsoleKernel
                 $current_update_at = $matches[1];
                 $current_update_at = preg_replace('/T/',' ', $current_update_at);
 
-                if(isset($member_last_post_list[intval($v['member'])-1]) && $current_update_at>$member_last_post_list[intval($v['member'])-1]) {
-                    $file_content .= $v['member']." ".$current_update_at." ".$member_last_post_list[intval($v['member'])-1]."\n";
-
+                if(isset($member_last_post_list[intval($v['member'])-1]) && $current_update_at.":00">$member_last_post_list[intval($v['member'])-1]) {
+                    dispatch(new getLatestPostJob($v['member']));
                 }
 
             }
-            file_put_contents('test.txt', $file_content);
         })->everyMinute();
     }
 }

@@ -34,9 +34,11 @@ $app->post('/hook', function () use ($app) {
             $cmd_func_name = "";
             break;
     }
-    $webhook_controller = new App\Http\Controllers\WebhookController();
+    $webhook_controller = new App\Http\Controllers\WebhookController($update);
     if(method_exists($webhook_controller, $cmd_func_name)) {
-        return $webhook_controller->$cmd_func_name($update);
+        return $webhook_controller->$cmd_func_name();
     }
     return "error";
 });
+
+$app->get('crawl', ['uses'=>'MainController@crawl']);
