@@ -26,7 +26,7 @@ class WebhookController extends Controller
         //
         $this->update = $update;
         $this->chat_id = $this->update["message"]["chat"]["id"];
-        $this->tg_user_id = $this->update['from']['id'];
+        $this->tg_user_id = $this->update["message"]['from']['id'];
     }
 
     //
@@ -34,7 +34,7 @@ class WebhookController extends Controller
         $fan = DB::table('fans')->where('telegram_user_id', $this->tg_user_id)->first();
         if(!$fan && !empty($this->tg_user_id)) {
             DB::table('fans')->insert([
-                'username' => $this->update['from']['first_name'],
+                'username' => $this->update["message"]['from']['first_name'],
                 'telegram_user_id' => $this->tg_user_id,
                 'chat_id' => $this->chat_id
             ]);
