@@ -39,18 +39,22 @@ class Kernel extends ConsoleKernel
             $result = preg_replace("/member/", "\"member\"", $result);
             $result = preg_replace("/update/", "\"update\"", $result);
             $result = json_decode($result, true);
-            $member_last_post_list = DB::table('kyzk46_members')->pluck('last_post_at');
+            $member_list = DB::table('kyzk46_members')->get();
+            $member_last_post_list = [];
+            foreach ($member_list as $member) {
+                $member_last_post_list[intval($member->id)] = $member->last_post_at;
+            }
             $i=0;
             foreach ($result as $v) {
                 preg_match('/(.*)\+/', $v['update'], $matches);
                 $current_update_at = $matches[1];
                 $current_update_at = preg_replace('/T/',' ', $current_update_at);
 
-                if(isset($member_last_post_list[intval($v['member'])-1]) && $current_update_at.":00">$member_last_post_list[intval($v['member'])-1]) {
+                if(isset($member_last_post_list[intval($v['member'])]) && $current_update_at.":00">$member_last_post_list[intval($v['member'])]) {
                     dispatch( (new getLatestPostJob($v['member']))->delay(Carbon::now()->addSeconds(10*$i++)) );
                 }
 
             }
-        })->everyMinute();
+        })->hourly();
     }
 }
