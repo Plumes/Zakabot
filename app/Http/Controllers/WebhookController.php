@@ -55,7 +55,9 @@ class WebhookController extends Controller
                 }
 
                 $inline_keyboard_one_row[] = ['text'=>$member->name, 'callback_data'=>'sub@'.$member->id];
+                $i++;
             }
+            $inline_keyboard[] = $inline_keyboard_one_row;
             $reply = [
                 'text' => "以下是你尚未订阅的成员列表，点击即可订阅",
                 'reply_markup' => ['inline_keyboard'=>$inline_keyboard]
@@ -83,7 +85,9 @@ class WebhookController extends Controller
                 }
 
                 $inline_keyboard_one_row[] = ['text'=>$member->name, 'callback_data'=>'unsub@'.$member->id];
+                $i++;
             }
+            $inline_keyboard[] = $inline_keyboard_one_row;
             $reply = [
                 'text' => "以下是已经订阅的成员列表，点击即可退订",
                 'reply_markup' => ['inline_keyboard'=>$inline_keyboard]
