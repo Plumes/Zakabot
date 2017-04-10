@@ -51,10 +51,8 @@ class WebhookController extends Controller
             return "error";
         }
         $subscribed_member_id_list = DB::table('idol_fans_relation')->where('fan_id', $fan->id)->pluck('member_id');
-        Log::info(json_encode($subscribed_member_id_list));
         $subscribed_member_id_list[] = '-1';
         $other_member_list = DB::table('kyzk46_members')->whereNotIn('id', $subscribed_member_id_list)->get();
-        Log::info(json_encode($other_member_list));
         if(count($other_member_list)<1) {
             $reply = ['text'=>"你已经关注了全部成员了"];
         } else {

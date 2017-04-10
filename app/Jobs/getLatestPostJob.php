@@ -71,7 +71,8 @@ class getLatestPostJob extends Job
         );
         DB::table('kyzk46_members')->where('id',intval($this->member_id))->update(['last_post_at'=>$post_time,'updated_at'=>$now]);
 
-        $fans_chat_list = DB::table('idol_fans_relation')->where('member_id', intval($this->member_id))->get();
+        $fans_id_list = DB::table('idol_fans_relation')->where('member_id', intval($this->member_id))->pluck('fan_id');
+        $fan_list = DB::table('fans')->whereIn('id', $fans_id_list)->get();
         if($cover_image===false) {
             $reply = $member_name." 发表了新的日记 \n<b>".$title.'</b>\n<a href="'.$post_url.'">查看详情</a>';
         } else {
@@ -79,9 +80,9 @@ class getLatestPostJob extends Job
         }
 
         $i=0;
-        foreach ($fans_chat_list as $chat) {
+        foreach ($fan_list as $fan) {
             Log::info('#'.$i);
-            dispatch((new sendUpdateMessageJob($chat->chat_id, $reply, $cover_image))->delay($i++/10));
+            dispatch((new sendUpdateMessageJob($fan->chat_id, $reply, $cover_image))->delay($i++/10));
         }
         return true;
     }
