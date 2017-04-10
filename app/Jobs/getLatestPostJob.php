@@ -40,9 +40,10 @@ class getLatestPostJob extends Job
         $xpath = new \DOMXPath($dom);
 
         $article = $xpath->query("//article")[0];
-        $title_node = $xpath->query("div[@class='innerHead']/div[@class='box-ttl']/h3", $article)->item(0);
-        $title = $xpath->query('a', $title_node)->item(0)->nodeValue;
-        $post_url = $xpath->query('a/@href', $title_node)->item(0)->nodeValue;
+        $title_node = $xpath->query("div[@class='innerHead']/div[@class='box-ttl']", $article)->item(0);
+        $title = trim($xpath->query('h3/a', $title_node)->item(0)->nodeValue);
+        $post_url = $xpath->query('h3/a/@href', $title_node)->item(0)->nodeValue;
+        $member_name = trim($xpath->query('p', $title_node)->item(0)->nodeValue);
         $content = $xpath->query("div[@class='box-article']", $article)->item(0);
         $content_html = $dom->saveXML($content);
         $content_html = preg_replace('/<div .*>/', '', $content_html);
@@ -61,6 +62,13 @@ class getLatestPostJob extends Job
             ]
         );
         DB::table('kyzk46_members')->where('id',intval($this->member_id))->update(['last_post_at'=>$post_time,'updated_at'=>$now]);
+
+        $fans_chat_list = DB::table('idol_fans_relation')->where('member_id', intval($this->member_id))->get();
+        $reply = $member_name." 发表了新的日记 <b>".$title.'</b><a href=\"'.$post_url.'\">查看详情</a>';
+        $i=0;
+        foreach ($fans_chat_list as $chat) {
+            dispatch(new sendUpdateMessageJob($chat->chat_id, $reply))->delay(1*($i%10));
+        }
         return true;
     }
 }
