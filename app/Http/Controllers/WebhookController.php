@@ -37,7 +37,7 @@ class WebhookController extends Controller
         $tg_api = new TelegramAPI();
         $subscribed_member_id_list = DB::table('idol_fans_relation')->where('chat_id', $this->chat_id)->pluck('member_id');
         $subscribed_member_id_list[] = '-1';
-        $other_member_list = DB::table('kyzk46_members')->whereNotIn('id', $subscribed_member_id_list);
+        $other_member_list = DB::table('kyzk46_members')->whereNotIn('id', $subscribed_member_id_list)->get();
         if(empty($other_member_list)) {
             $reply = ['text'=>"你已经关注了全部成员了"];
         } else {
@@ -60,7 +60,7 @@ class WebhookController extends Controller
         if(empty($subscribed_member_id_list)) {
             $reply = ['text'=>"你还没有订阅成员"];
         } else {
-            $subscribed_member_list = DB::table('kyzk46_members')->whereIn('id', $subscribed_member_id_list);
+            $subscribed_member_list = DB::table('kyzk46_members')->whereIn('id', $subscribed_member_id_list)->get();
             $reply_markup = [];
             foreach ($subscribed_member_list as $member) {
                 $reply_markup[] = ['text'=>$member->name, 'callback_data'=>'unsub@'.$member->id];
