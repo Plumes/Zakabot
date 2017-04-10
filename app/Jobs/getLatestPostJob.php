@@ -73,9 +73,9 @@ class getLatestPostJob extends Job
 
         $fans_chat_list = DB::table('idol_fans_relation')->where('member_id', intval($this->member_id))->get();
         if($cover_image===false) {
-            $reply = $member_name." 发表了新的日记 <b>".$title.'</b><a href="'.$post_url.'">查看详情</a>';
+            $reply = $member_name." 发表了新的日记 \n<b>".$title.'</b>\n<a href="'.$post_url.'">查看详情</a>';
         } else {
-            $reply = $member_name." 发表了新的日记 ".$title." \n链接: ".$post_url;
+            $reply = $member_name." 发表了新的日记\n".$title."\n链接: ".$post_url;
         }
 
         $i=0;
