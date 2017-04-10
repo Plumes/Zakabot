@@ -75,7 +75,7 @@ class getLatestPostJob extends Job
         if($cover_image===false) {
             $reply = $member_name." 发表了新的日记 <b>".$title.'</b><a href="'.$post_url.'">查看详情</a>';
         } else {
-            $reply = $member_name."发表了新的日记 ".$title." 链接: ".$post_url;
+            $reply = $member_name." 发表了新的日记 ".$title." \n链接: ".$post_url;
         }
 
         $i=0;
