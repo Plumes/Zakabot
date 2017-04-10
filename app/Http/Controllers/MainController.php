@@ -29,7 +29,7 @@ class MainController extends Controller
     public function crawl() {
         $member_id = "01";
         $fans_chat_list = DB::table('idol_fans_relation')->where('member_id', intval($member_id))->get();
-        $reply = 'test 发表了新的日记 <b>1234</b><a href=\"http://www.baidu.com\">查看详情</a>';
+        $reply = 'test 发表了新的日记 <b>1234</b><a href="http://www.baidu.com">查看详情</a>';
         $i=0;
         foreach ($fans_chat_list as $chat) {
             dispatch( (new sendUpdateMessageJob($chat->chat_id, $reply))->delay($i++/10) );
