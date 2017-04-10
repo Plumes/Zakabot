@@ -7,6 +7,8 @@
  */
 namespace App\Libraries;
 
+use Illuminate\Support\Facades\Log;
+
 class TelegramAPI {
     private $api_base = "https://api.telegram.org/bot372178022:AAErVXV1vzhxF-tSgVgtwYzGe1DOzbXDSbg/";
     public function __construct()
@@ -16,6 +18,8 @@ class TelegramAPI {
     public function sendMessage($chat_id, $reply) {
         $api = $this->api_base."sendMessage";
         $reply['chat_id'] = $chat_id;
+        Log::info($api);
+        Log::info(json_encode($reply));
         list($return_code, $return_content) = $this->http_post_data($api, json_encode($reply));
         return "success";
     }
