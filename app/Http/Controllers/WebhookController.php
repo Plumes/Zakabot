@@ -44,13 +44,21 @@ class WebhookController extends Controller
         if(count($other_member_list)<1) {
             $reply = ['text'=>"你已经关注了全部成员了"];
         } else {
-            $reply_markup = [];
+            $inline_keyboard = [];
+            $inline_keyboard_one_row = [];
+            $i=0;
             foreach ($other_member_list as $member) {
-                $reply_markup[] = ['text'=>$member->name, 'callback_data'=>'sub@'.$member->id];
+                if($i==3) {
+                    $i=0;
+                    $inline_keyboard[] = $inline_keyboard_one_row;
+                    $inline_keyboard_one_row = [];
+                }
+
+                $inline_keyboard_one_row[] = ['text'=>$member->name, 'callback_data'=>'sub@'.$member->id];
             }
             $reply = [
                 'text' => "以下是你尚未订阅的成员列表，点击即可订阅",
-                'reply_markup' => $reply_markup
+                'reply_markup' => ['inline_keyboard'=>$inline_keyboard]
             ];
         }
         $tg_api->sendMessage($this->chat_id, $reply);
