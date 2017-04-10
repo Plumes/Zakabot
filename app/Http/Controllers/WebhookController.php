@@ -20,15 +20,25 @@ class WebhookController extends Controller
      */
     private $update;
     private $chat_id;
+    private $tg_user_id;
     public function __construct($update=false)
     {
         //
         $this->update = $update;
         $this->chat_id = $this->update["message"]["chat"]["id"];
+        $this->tg_user_id = $this->update['from']['id'];
     }
 
     //
     public function start() {
+        $fan = DB::table('fans')->where('telegram_user_id', $this->tg_user_id)->first();
+        if(!$fan && !empty($this->tg_user_id)) {
+            DB::table('fans')->insert([
+                'username' => $this->update['from']['first_name'],
+                'telegram_user_id' => $this->tg_user_id,
+                'chat_id' => $this->chat_id
+            ]);
+        }
         $tg_api = new TelegramAPI();
         $reply =  ['text'=>"欢迎使用"];
         return $tg_api->sendMessage($this->chat_id, $reply);
@@ -36,7 +46,11 @@ class WebhookController extends Controller
 
     public function subscribeList() {
         $tg_api = new TelegramAPI();
-        $subscribed_member_id_list = DB::table('idol_fans_relation')->where('chat_id', $this->chat_id)->pluck('member_id');
+        $fan = DB::table('fans')->where('telegram_user_id', $this->tg_user_id)->first();
+        if(!$fan) {
+            return "error";
+        }
+        $subscribed_member_id_list = DB::table('idol_fans_relation')->where('fan_id', $fan->id)->pluck('member_id');
         Log::info(json_encode($subscribed_member_id_list));
         $subscribed_member_id_list[] = '-1';
         $other_member_list = DB::table('kyzk46_members')->whereNotIn('id', $subscribed_member_id_list)->get();
@@ -68,8 +82,12 @@ class WebhookController extends Controller
     }
 
     public function unsubscribeList() {
+        $fan = DB::table('fans')->where('telegram_user_id', $this->tg_user_id)->first();
+        if(!$fan) {
+            return "error";
+        }
         $tg_api = new TelegramAPI();
-        $subscribed_member_id_list = DB::table('idol_fans_relation')->where('chat_id', $this->chat_id)->pluck('member_id');
+        $subscribed_member_id_list = DB::table('idol_fans_relation')->where('fan_id', $fan->id)->pluck('member_id');
         if(count($subscribed_member_id_list)<1) {
             $reply = ['text'=>"你还没有订阅成员"];
         } else {

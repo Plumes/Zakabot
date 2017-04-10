@@ -17,7 +17,6 @@ class CreateIdolFansRelationTable extends Migration
         Schema::create('idol_fans_relation', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('fan_id');
-            $table->string('chat_id');
             $table->integer('member_id');
             $table->timestamps();
 

@@ -20,14 +20,14 @@ class CallbackController extends Controller
      */
     private $update;
     private $callback_query_id;
-    private $chat_id;
+    private $tg_user_id;
 
     public function __construct($update = false)
     {
         //
         $this->update = $update;
         $this->callback_query_id = $this->update['callback_query']['id'];
-        $this->chat_id = $this->update["message"]["chat"]["id"];
+        $this->tg_user_id = $this->update['callback_query']['from']['id'];
     }
 
     public function subscribe($member_id) {
@@ -35,29 +35,18 @@ class CallbackController extends Controller
         $now = Date('Y-m-d H:i:s');
 
         $member = DB::table('kyzk46_members')->where('id', intval($member_id))->first();
-        if(empty($member)) {
-            $tg_api->answerCallbackQuery($this->callback_query_id);
+        $fan = DB::table('fans')->where('telegram_user_id', $this->tg_user_id)->first();
+        if(!$member || !$fan) {
+            return $tg_api->answerCallbackQuery($this->callback_query_id);
         }
-        $fan = DB::table('fans')->where('chat_id', $this->chat_id)->first();
         $check_data = DB::table('idol_fans_relation')
             ->where('chat_id', $this->chat_id)
             ->where('member_id', $member_id)
             ->first();
-        if(empty($fan)) {
-            $fan_id = DB::table('fans')->insert([
-                'chat_id'=>$this->chat_id,
-                'username'=>$this->update['callback_query']['from']['username'],
-                'created_at'=>$now,
-                'updated_at'=>$now
-            ]);
-        } else {
-            $fan_id = $fan->id;
-        }
         $result = true;
         if(empty($check_data)) {
             $result = DB::table('idol_fans_relation')->insert([
-                'fan_id'=>$fan_id,
-                'chat_id'=>$this->chat_id,
+                'fan_id'=>$fan->id,
                 'member_id'=>intval($member_id),
                 'created_at'=>$now,
                 'updated_at'=>$now

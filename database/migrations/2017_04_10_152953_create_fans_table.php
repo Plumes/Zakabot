@@ -18,6 +18,7 @@ class CreateFansTable extends Migration
             $table->increments('id');
             $table->string('username')->nullable();
             $table->string('chat_id');
+            $table->string('telegram_user_id');
             $table->timestamps();
 
             $table->index('chat_id');
