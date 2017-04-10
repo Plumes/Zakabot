@@ -63,9 +63,9 @@ $app->post('/hook', function () use ($app) {
                     break;
             }
 
-            $webhook_controller = new App\Http\Controllers\WebhookController($update);
+            $webhook_controller = new App\Http\Controllers\CallbackController($update);
             if (method_exists($webhook_controller, $cmd_func_name)) {
-                return $webhook_controller->$cmd_func_name();
+                return $webhook_controller->$cmd_func_name($param);
             } else {
                 $tg_api = new \App\Libraries\TelegramAPI();
                 $tg_api->answerCallbackQuery($update['callback_query']['id']);
