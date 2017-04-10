@@ -82,7 +82,7 @@ class getLatestPostJob extends Job
         $i=0;
         foreach ($fan_list as $fan) {
             Log::info('#'.$i);
-            dispatch((new sendUpdateMessageJob($fan->chat_id, $reply, $cover_image))->delay($i++/10));
+            dispatch( (new sendUpdateMessageJob($fan->chat_id, $reply, $cover_image))->delay($i++/10) );
         }
         return true;
     }
