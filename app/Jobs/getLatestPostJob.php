@@ -51,7 +51,7 @@ class getLatestPostJob extends Job
         $content_html = preg_replace('/<div .*>/', '', $content_html);
         $content_html = preg_replace('/<\/div>/', '\n', $content_html);
         $content_html = preg_replace('/<br\/>/', '\n', $content_html);
-        preg_match('/<img src="(\S+)"\s*\/>/', $content_html, $matches);
+        preg_match('/<img.*src="(\S+)".*\/>/', $content_html, $matches);
         $cover_image = false;
         if(isset($matches[1])) {
             $cover_image = $matches[1];

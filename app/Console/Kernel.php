@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use Faker\Provider\DateTime;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Laravel\Lumen\Console\Kernel as ConsoleKernel;
 
 class Kernel extends ConsoleKernel
@@ -46,7 +47,7 @@ class Kernel extends ConsoleKernel
                 $current_update_at = preg_replace('/T/',' ', $current_update_at);
 
                 if(isset($member_last_post_list[intval($v['member'])-1]) && $current_update_at.":00">$member_last_post_list[intval($v['member'])-1]) {
-                    dispatch( (new getLatestPostJob($v['member']))->delay(Carbon::now()->addMinutes(1*$i++)) );
+                    dispatch( (new getLatestPostJob($v['member']))->delay(Carbon::now()->addSeconds(10*$i++)) );
                 }
 
             }
