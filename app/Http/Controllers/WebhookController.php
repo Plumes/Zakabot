@@ -36,8 +36,10 @@ class WebhookController extends Controller
     public function subscribeList() {
         $tg_api = new TelegramAPI();
         $subscribed_member_id_list = DB::table('idol_fans_relation')->where('chat_id', $this->chat_id)->pluck('member_id');
+        Log::info(json_encode($subscribed_member_id_list));
         $subscribed_member_id_list[] = '-1';
         $other_member_list = DB::table('kyzk46_members')->whereNotIn('id', $subscribed_member_id_list)->get();
+        Log::info(json_encode($other_member_list));
         if(empty($other_member_list)) {
             $reply = ['text'=>"你已经关注了全部成员了"];
         } else {
