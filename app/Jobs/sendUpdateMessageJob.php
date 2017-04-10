@@ -39,7 +39,7 @@ class sendUpdateMessageJob extends Job
             'text' => $this->reply,
             'parse_mode' => 'HTML'
         ];
-        Log::info($api_url);
+        Log::info(json_encode($post_data));
         list($return_code, $return_content) = $this->http_post_data($api_url, json_encode($post_data));
         Log::info($return_code);
         Log::info($return_content);
