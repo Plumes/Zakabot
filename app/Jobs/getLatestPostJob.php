@@ -8,6 +8,7 @@
 namespace App\Jobs;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class getLatestPostJob extends Job
 {
@@ -70,10 +71,16 @@ class getLatestPostJob extends Job
         DB::table('kyzk46_members')->where('id',intval($this->member_id))->update(['last_post_at'=>$post_time,'updated_at'=>$now]);
 
         $fans_chat_list = DB::table('idol_fans_relation')->where('member_id', intval($this->member_id))->get();
-        $reply = $member_name." 发表了新的日记 <b>".$title.'</b><a href="'.$post_url.'">查看详情</a>';
+        if($cover_image===false) {
+            $reply = $member_name." 发表了新的日记 <b>".$title.'</b><a href="'.$post_url.'">查看详情</a>';
+        } else {
+            $reply = $member_name."发表了新的日记 ".$title." 链接: ".$post_url;
+        }
+
         $i=0;
         foreach ($fans_chat_list as $chat) {
-            dispatch(new sendUpdateMessageJob($chat->chat_id, $reply, $cover_image))->delay(1*($i%10));
+            Log::info('#'.$i);
+            dispatch((new sendUpdateMessageJob($chat->chat_id, $reply, $cover_image))->delay($i++/10));
         }
         return true;
     }
