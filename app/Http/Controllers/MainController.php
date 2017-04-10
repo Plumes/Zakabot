@@ -32,7 +32,7 @@ class MainController extends Controller
         $reply = 'test 发表了新的日记 <b>1234</b><a href=\"http://www.baidu.com\">查看详情</a>';
         $i=0;
         foreach ($fans_chat_list as $chat) {
-            dispatch(new sendUpdateMessageJob($chat->chat_id, $reply))->delay(Carbon::now()->addSeconds(($i++/10)));
+            dispatch( (new sendUpdateMessageJob($chat->chat_id, $reply))->delay($i++/10) );
         }
         return "success";
     }
