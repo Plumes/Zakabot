@@ -49,13 +49,19 @@ class getLatestPostJob extends Job
         $content_html = preg_replace('/<div .*>/', '', $content_html);
         $content_html = preg_replace('/<\/div>/', '\n', $content_html);
         $content_html = preg_replace('/<br\/>/', '\n', $content_html);
+        preg_match('/<img src="(\S+)"\s*\/>/', $content_html, $matches);
+        $cover_image = false;
+        if(isset($matches[1])) {
+            $cover_image = $matches[1];
+        }
         $post_time = trim($xpath->query("div[@class='box-bottom']/ul/li", $article)->item(0)->textContent);
         $now = date('Y-m-d H:i:s');
         DB::table('posts')->insert([
                 'member_id' => intval($this->member_id),
                 'title' => $title,
                 'url' => 'http://www.keyakizaka46.com'.$post_url,
-                'content' => $content_html,
+                'content' => trim($content_html),
+                'cover_image' => $cover_image!==false?$cover_image:'',
                 'posted_at' => $post_time,
                 'created_at'=>$now,
                 'updated_at'=>$now
@@ -64,10 +70,10 @@ class getLatestPostJob extends Job
         DB::table('kyzk46_members')->where('id',intval($this->member_id))->update(['last_post_at'=>$post_time,'updated_at'=>$now]);
 
         $fans_chat_list = DB::table('idol_fans_relation')->where('member_id', intval($this->member_id))->get();
-        $reply = $member_name." 发表了新的日记 <b>".$title.'</b><a href=\"'.$post_url.'\">查看详情</a>';
+        $reply = $member_name." 发表了新的日记 <b>".$title.'</b><a href="'.$post_url.'">查看详情</a>';
         $i=0;
         foreach ($fans_chat_list as $chat) {
-            dispatch(new sendUpdateMessageJob($chat->chat_id, $reply))->delay(1*($i%10));
+            dispatch(new sendUpdateMessageJob($chat->chat_id, $reply, $cover_image))->delay(1*($i%10));
         }
         return true;
     }

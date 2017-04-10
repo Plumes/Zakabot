@@ -18,11 +18,13 @@ class sendUpdateMessageJob extends Job
      */
     private $chat_id;
     private $reply;
-    public function __construct($chat_id, $reply)
+    private $cover_image;
+    public function __construct($chat_id, $reply, $cover_image)
     {
         //
         $this->chat_id = $chat_id;
         $this->reply = $reply;
+        $this->cover_image = $cover_image;
     }
 
     /**
@@ -32,7 +34,15 @@ class sendUpdateMessageJob extends Job
      */
     public function handle()
     {
-        //
+        if($this->cover_image ===  false) {
+            return $this->sendText();
+        } else {
+            return $this->sendPhoto();
+        }
+
+    }
+
+    private function sendText() {
         $api_url = "https://api.telegram.org/bot372178022:AAErVXV1vzhxF-tSgVgtwYzGe1DOzbXDSbg/sendmessage";
         $post_data = [
             'chat_id' => $this->chat_id,
@@ -43,6 +53,17 @@ class sendUpdateMessageJob extends Job
         list($return_code, $return_content) = $this->http_post_data($api_url, json_encode($post_data));
         Log::info($return_code);
         Log::info($return_content);
+        return "success";
+    }
+
+    private function sendPhoto() {
+        $api_url = "https://api.telegram.org/bot372178022:AAErVXV1vzhxF-tSgVgtwYzGe1DOzbXDSbg/sendPhoto";
+        $post_data = [
+            'chat_id' => $this->chat_id,
+            'photo' => $this->cover_image,
+            'caption' => $this->reply
+        ];
+        list($return_code, $return_content) = $this->http_post_data($api_url, json_encode($post_data));
         return "success";
     }
 
