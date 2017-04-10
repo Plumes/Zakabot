@@ -9,6 +9,7 @@
 namespace App\Http\Controllers;
 
 use App\Jobs\getLatestPostJob;
+use App\Jobs\sendUpdateMessageJob;
 use Illuminate\Support\Facades\DB;
 
 class MainController extends Controller
