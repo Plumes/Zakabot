@@ -30,7 +30,7 @@ class WebhookController extends Controller
     public function start() {
         $tg_api = new TelegramAPI();
         $reply =  ['text'=>"欢迎使用"];
-        return $tg_api->sendMessage($reply);
+        return $tg_api->sendMessage($this->chat_id, $reply);
     }
 
     public function subscribeList() {
@@ -50,7 +50,7 @@ class WebhookController extends Controller
                 'reply_markup' => $reply_markup
             ];
         }
-        $tg_api->sendMessage($reply);
+        $tg_api->sendMessage($this->chat_id, $reply);
         return "success";
     }
 
@@ -70,7 +70,7 @@ class WebhookController extends Controller
                 'reply_markup' => $reply_markup
             ];
         }
-        $tg_api->sendMessage($reply);
+        $tg_api->sendMessage($this->chat_id, $reply);
         return "success";
     }
 
