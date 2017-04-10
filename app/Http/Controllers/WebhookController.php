@@ -64,13 +64,21 @@ class WebhookController extends Controller
             $reply = ['text'=>"你还没有订阅成员"];
         } else {
             $subscribed_member_list = DB::table('kyzk46_members')->whereIn('id', $subscribed_member_id_list)->get();
-            $reply_markup = [];
+            $inline_keyboard = [];
+            $inline_keyboard_one_row = [];
+            $i=0;
             foreach ($subscribed_member_list as $member) {
-                $reply_markup[] = ['text'=>$member->name, 'callback_data'=>'unsub@'.$member->id];
+                if($i==3) {
+                    $i=0;
+                    $inline_keyboard[] = $inline_keyboard_one_row;
+                    $inline_keyboard_one_row = [];
+                }
+
+                $inline_keyboard_one_row[] = ['text'=>$member->name, 'callback_data'=>'unsub@'.$member->id];
             }
             $reply = [
                 'text' => "以下是已经订阅的成员列表，点击即可退订",
-                'reply_markup' => $reply_markup
+                'reply_markup' => ['inline_keyboard'=>$inline_keyboard]
             ];
         }
         $tg_api->sendMessage($this->chat_id, $reply);
