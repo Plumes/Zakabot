@@ -41,7 +41,7 @@ class WebhookController extends Controller
         $subscribed_member_id_list[] = '-1';
         $other_member_list = DB::table('kyzk46_members')->whereNotIn('id', $subscribed_member_id_list)->get();
         Log::info(json_encode($other_member_list));
-        if(empty($other_member_list)) {
+        if(count($other_member_list)<1) {
             $reply = ['text'=>"你已经关注了全部成员了"];
         } else {
             $reply_markup = [];
@@ -60,7 +60,7 @@ class WebhookController extends Controller
     public function unsubscribeList() {
         $tg_api = new TelegramAPI();
         $subscribed_member_id_list = DB::table('idol_fans_relation')->where('chat_id', $this->chat_id)->pluck('member_id');
-        if(empty($subscribed_member_id_list)) {
+        if(count($subscribed_member_id_list)<1) {
             $reply = ['text'=>"你还没有订阅成员"];
         } else {
             $subscribed_member_list = DB::table('kyzk46_members')->whereIn('id', $subscribed_member_id_list)->get();
