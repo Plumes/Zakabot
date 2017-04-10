@@ -40,7 +40,7 @@ class CallbackController extends Controller
             return $tg_api->answerCallbackQuery($this->callback_query_id);
         }
         $check_data = DB::table('idol_fans_relation')
-            ->where('chat_id', $this->chat_id)
+            ->where('fan_id', $fan->id)
             ->where('member_id', $member_id)
             ->first();
         $result = true;
