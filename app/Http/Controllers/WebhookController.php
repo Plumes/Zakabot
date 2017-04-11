@@ -31,12 +31,15 @@ class WebhookController extends Controller
 
     //
     public function start() {
+        $now = Date('Y-m-d H:i:s');
         $fan = DB::table('fans')->where('telegram_user_id', $this->tg_user_id)->first();
         if(!$fan && !empty($this->tg_user_id)) {
             DB::table('fans')->insert([
                 'username' => $this->update["message"]['from']['first_name'],
                 'telegram_user_id' => $this->tg_user_id,
-                'chat_id' => $this->chat_id
+                'chat_id' => $this->chat_id,
+                'created_at' => $now,
+                'updated_at' => $now
             ]);
         }
         $tg_api = new TelegramAPI();
