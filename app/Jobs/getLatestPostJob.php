@@ -61,7 +61,7 @@ class getLatestPostJob extends Job
         DB::table('posts')->insert([
                 'member_id' => intval($this->member_id),
                 'title' => $title,
-                'url' => 'http://www.keyakizaka46.com'.$post_url,
+                'url' => $post_url,
                 'content' => trim($content_html),
                 'cover_image' => $cover_image!==false?$cover_image:'',
                 'posted_at' => $post_time,
