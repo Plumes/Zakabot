@@ -21,12 +21,19 @@ class WebhookController extends Controller
     private $update;
     private $chat_id;
     private $tg_user_id;
-    public function __construct($update=false)
+    private $bot_id;
+    private $group_id;
+    private $tg_api;
+
+    public function __construct($bot_id, $group_id, $update=false)
     {
         //
         $this->update = $update;
         $this->chat_id = $this->update["message"]["chat"]["id"];
         $this->tg_user_id = $this->update["message"]['from']['id'];
+        $this->bot_id = $bot_id;
+        $this->group_id = $group_id;
+        $this->tg_api = new TelegramAPI($this->bot_id);
     }
 
     //
@@ -42,22 +49,23 @@ class WebhookController extends Controller
                 'updated_at' => $now
             ]);
         }
-        $tg_api = new TelegramAPI();
         $new_user_msg = ['text'=>$this->update["message"]['from']['first_name']." 加入"];
-        $tg_api->sendMessage("307558399",$new_user_msg);
+        $this->tg_api->sendMessage("307558399",$new_user_msg);
         $reply =  ['text'=>"欢迎使用\n/sublist 查看未订阅的成员列表\n/unsublist 查看已订阅的成员列表"];
-        return $tg_api->sendMessage($this->chat_id, $reply);
+        return $this->tg_api->sendMessage($this->chat_id, $reply);
     }
 
     public function subscribeList() {
-        $tg_api = new TelegramAPI();
         $fan = DB::table('fans')->where('telegram_user_id', $this->tg_user_id)->first();
         if(!$fan) {
             return "error";
         }
         $subscribed_member_id_list = DB::table('idol_fans_relation')->where('fan_id', $fan->id)->pluck('member_id');
         $subscribed_member_id_list[] = '-1';
-        $other_member_list = DB::table('kyzk46_members')->whereNotIn('id', $subscribed_member_id_list)->get();
+        $other_member_list = DB::table('idol_members')
+            ->where('group_id', $this->group_id)
+            ->whereNotIn('id', $subscribed_member_id_list)
+            ->get();
         if(count($other_member_list)<1) {
             $reply = ['text'=>"你已经关注了全部成员了"];
         } else {
@@ -80,7 +88,7 @@ class WebhookController extends Controller
                 'reply_markup' => ['inline_keyboard'=>$inline_keyboard]
             ];
         }
-        $tg_api->sendMessage($this->chat_id, $reply);
+        $this->tg_api->sendMessage($this->chat_id, $reply);
         return "success";
     }
 
@@ -89,12 +97,14 @@ class WebhookController extends Controller
         if(!$fan) {
             return "error";
         }
-        $tg_api = new TelegramAPI();
         $subscribed_member_id_list = DB::table('idol_fans_relation')->where('fan_id', $fan->id)->pluck('member_id');
         if(count($subscribed_member_id_list)<1) {
             $reply = ['text'=>"你还没有订阅成员"];
         } else {
-            $subscribed_member_list = DB::table('kyzk46_members')->whereIn('id', $subscribed_member_id_list)->get();
+            $subscribed_member_list = DB::table('idol_members')
+                ->where('group_id', $this->group_id)
+                ->whereIn('id', $subscribed_member_id_list)
+                ->get();
             $inline_keyboard = [];
             $inline_keyboard_one_row = [];
             $i=0;
@@ -114,7 +124,7 @@ class WebhookController extends Controller
                 'reply_markup' => ['inline_keyboard'=>$inline_keyboard]
             ];
         }
-        $tg_api->sendMessage($this->chat_id, $reply);
+        $this->tg_api->sendMessage($this->chat_id, $reply);
         return "success";
     }
 }

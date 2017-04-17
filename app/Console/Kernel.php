@@ -39,6 +39,33 @@ class Kernel extends ConsoleKernel
             $result = preg_replace("/member/", "\"member\"", $result);
             $result = preg_replace("/update/", "\"update\"", $result);
             $result = json_decode($result, true);
+            $member_list = DB::table('idol_members')->get();
+            $member_last_post_list = [];
+            foreach ($member_list as $member) {
+                $member_last_post_list[intval($member->official_id)] = $member->last_post_at;
+            }
+            $i=0;
+            foreach ($result as $v) {
+                preg_match('/(.*)\+/', $v['update'], $matches);
+                $current_update_at = $matches[1];
+                $current_update_at = preg_replace('/T/',' ', $current_update_at);
+
+                if(isset($member_last_post_list[intval($v['member'])]) && $current_update_at.":00">$member_last_post_list[intval($v['member'])]) {
+                    dispatch( (new getLatestPostJob($v['member']))->delay(Carbon::now()->addSeconds(10*$i++)) );
+                }
+
+            }
+        })->hourly();
+
+        $schedule->call(function () {
+            $file_content = "";
+            $content = file_get_contents("http://www.keyakizaka46.com/s/k46o/diary/member/list?ima=0000");
+            preg_match("/blogUpdate = (\[.*\])/s", $content, $matches);
+            $result = $matches[1];
+            $result = preg_replace("/\n/s", "", $result);
+            $result = preg_replace("/member/", "\"member\"", $result);
+            $result = preg_replace("/update/", "\"update\"", $result);
+            $result = json_decode($result, true);
             $member_list = DB::table('kyzk46_members')->get();
             $member_last_post_list = [];
             foreach ($member_list as $member) {
@@ -55,6 +82,6 @@ class Kernel extends ConsoleKernel
                 }
 
             }
-        })->hourly();
+        })->hourlyAt(30);;
     }
 }

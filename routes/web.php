@@ -15,7 +15,14 @@ $app->get('/', function () use ($app) {
     return $app->version();
 });
 
-$app->post('/hook', function () use ($app) {
+$app->post('/{bot_id}/hook', function ($bot_id) use ($app) {
+    if($bot_id=="372178022") {
+        $group_id = 1;
+    } elseif ($bot_id=="309781356") {
+        $group_id = 2;
+    } else {
+        return "error";
+    }
     $content = file_get_contents("php://input");
     $update = json_decode($content, true);
     if(isset($update['message']) && isset($update['message']['text'])) {
@@ -39,7 +46,7 @@ $app->post('/hook', function () use ($app) {
                 $cmd_func_name = "";
                 break;
         }
-        $webhook_controller = new App\Http\Controllers\WebhookController($update);
+        $webhook_controller = new App\Http\Controllers\WebhookController($bot_id, $group_id, $update);
         if (method_exists($webhook_controller, $cmd_func_name)) {
             return $webhook_controller->$cmd_func_name();
         }
@@ -64,7 +71,7 @@ $app->post('/hook', function () use ($app) {
                     break;
             }
 
-            $webhook_controller = new App\Http\Controllers\CallbackController($update);
+            $webhook_controller = new App\Http\Controllers\CallbackController($bot_id, $group_id, $update);
             if (method_exists($webhook_controller, $cmd_func_name)) {
                 return $webhook_controller->$cmd_func_name($param);
             } else {

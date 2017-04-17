@@ -10,9 +10,19 @@ namespace App\Libraries;
 use Illuminate\Support\Facades\Log;
 
 class TelegramAPI {
-    private $api_base = "https://api.telegram.org/bot372178022:AAErVXV1vzhxF-tSgVgtwYzGe1DOzbXDSbg/";
-    public function __construct()
+    private $bot_id;
+    private $api_base;
+    public function __construct($bot_id)
     {
+        $this->bot_id = $bot_id;
+        if($bot_id=="372178022") {
+            $this->api_base = "https://api.telegram.org/bot372178022:AAErVXV1vzhxF-tSgVgtwYzGe1DOzbXDSbg/";
+        } elseif ($bot_id=="309781356") {
+            $this->api_base = "https://api.telegram.org/bot309781356:AAFl5KmawS2-x56V8jv-c4t43pjnPFRLPMs/";
+        } else {
+            return null;
+        }
+
     }
 
     public function sendMessage($chat_id, $reply) {

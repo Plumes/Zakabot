@@ -21,33 +21,38 @@ class CallbackController extends Controller
     private $update;
     private $callback_query_id;
     private $tg_user_id;
+    private $bot_id;
+    private $group_id;
+    private $tg_api;
 
-    public function __construct($update = false)
+    public function __construct($bot_id, $group_id, $update = false)
     {
         //
         $this->update = $update;
         $this->callback_query_id = $this->update['callback_query']['id'];
         $this->tg_user_id = $this->update['callback_query']['from']['id'];
+        $this->bot_id = $bot_id;
+        $this->group_id = $group_id;
+        $this->tg_api = new TelegramAPI($this->bot_id);
     }
 
     public function subscribe($member_id) {
-        $tg_api = new TelegramAPI();
         $now = Date('Y-m-d H:i:s');
 
-        $member = DB::table('kyzk46_members')->where('id', intval($member_id))->first();
+        $member = DB::table('idol_members')->where('id', intval($member_id))->first();
         $fan = DB::table('fans')->where('telegram_user_id', $this->tg_user_id)->first();
         if(!$member || !$fan) {
-            return $tg_api->answerCallbackQuery($this->callback_query_id);
+            return $this->tg_api->answerCallbackQuery($this->callback_query_id);
         }
         $check_data = DB::table('idol_fans_relation')
             ->where('fan_id', $fan->id)
-            ->where('member_id', $member_id)
+            ->where('member_id', $member->id)
             ->first();
         $result = true;
         if(empty($check_data)) {
             $result = DB::table('idol_fans_relation')->insert([
                 'fan_id'=>$fan->id,
-                'member_id'=>intval($member_id),
+                'member_id'=>intval($member->id),
                 'created_at'=>$now,
                 'updated_at'=>$now
             ]);
@@ -57,17 +62,15 @@ class CallbackController extends Controller
         } else {
             $reply = "操作出现问题, 请稍后重试";
         }
-        $tg_api->sendMessage($fan->chat_id, ['text'=>$reply]);
-        return $tg_api->answerCallbackQuery($this->callback_query_id, ['text'=>$reply]);
+        $this->tg_api->sendMessage($fan->chat_id, ['text'=>$reply]);
+        return $this->tg_api->answerCallbackQuery($this->callback_query_id, ['text'=>$reply]);
     }
 
     public function unsubscribe($member_id) {
-        $tg_api = new TelegramAPI();
-
-        $member = DB::table('kyzk46_members')->where('id', intval($member_id))->first();
+        $member = DB::table('idol_members')->where('id', intval($member_id))->first();
         $fan = DB::table('fans')->where('telegram_user_id', $this->tg_user_id)->first();
         if(!$member || !$fan) {
-            return $tg_api->answerCallbackQuery($this->callback_query_id);
+            return $this->tg_api->answerCallbackQuery($this->callback_query_id);
         }
 
         DB::table('idol_fans_relation')
@@ -77,7 +80,7 @@ class CallbackController extends Controller
 
         $reply = "你成功退订了 ".$member->name." 的日记";
 
-        $tg_api->sendMessage($fan->chat_id, ['text'=>$reply]);
-        return $tg_api->answerCallbackQuery($this->callback_query_id, ['text'=>$reply]);
+        $this->tg_api->sendMessage($fan->chat_id, ['text'=>$reply]);
+        return $this->tg_api->answerCallbackQuery($this->callback_query_id, ['text'=>$reply]);
     }
 }

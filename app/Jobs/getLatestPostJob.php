@@ -69,7 +69,7 @@ class getLatestPostJob extends Job
                 'updated_at'=>$now
             ]
         );
-        DB::table('kyzk46_members')->where('id',intval($this->member_id))->update(['last_post_at'=>$post_time,'updated_at'=>$now]);
+        DB::table('idol_members')->where('official_id',intval($this->member_id))->update(['last_post_at'=>$post_time,'updated_at'=>$now]);
 
         $fans_id_list = DB::table('idol_fans_relation')->where('member_id', intval($this->member_id))->pluck('fan_id');
         $fan_list = DB::table('fans')->whereIn('id', $fans_id_list)->get();
