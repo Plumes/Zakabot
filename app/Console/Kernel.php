@@ -3,6 +3,7 @@
 namespace App\Console;
 
 use App\Jobs\getKYZKLatestPostJob;
+use App\Jobs\sendUpdateMessageJob;
 use Carbon\Carbon;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\DB;
