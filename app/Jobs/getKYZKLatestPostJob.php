@@ -32,7 +32,7 @@ class getKYZKLatestPostJob extends Job
     public function handle()
     {
         //
-        $member = DB::table('members')->where('group_id', 1)->where('official_id', $this->official_id)->first();
+        $member = DB::table('idol_members')->where('group_id', 1)->where('official_id', $this->official_id)->first();
         if(empty($member)) return;
         $blog_url = "http://www.keyakizaka46.com/s/k46o/diary/member/list?ima=0000&ct=".$member->offical_id;
         $html = file_get_contents($blog_url);
