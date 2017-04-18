@@ -75,7 +75,7 @@ $app->post('/{bot_id}/hook', function ($bot_id) use ($app) {
             if (method_exists($webhook_controller, $cmd_func_name)) {
                 return $webhook_controller->$cmd_func_name($param);
             } else {
-                $tg_api = new \App\Libraries\TelegramAPI();
+                $tg_api = new \App\Libraries\TelegramAPI($bot_id);
                 $tg_api->answerCallbackQuery($update['callback_query']['id']);
             }
         }

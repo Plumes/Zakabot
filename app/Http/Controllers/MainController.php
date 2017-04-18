@@ -8,7 +8,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Jobs\getLatestPostJob;
+use App\Jobs\getKYZKLatestPostJob;
 use App\Jobs\sendUpdateMessageJob;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -28,7 +28,7 @@ class MainController extends Controller
     //
     public function crawl() {
         $member_id = "01";
-        $this->dispatch(new getLatestPostJob($member_id));
+        $this->dispatch(new getKYZKLatestPostJob($member_id));
         return "success";
     }
 }

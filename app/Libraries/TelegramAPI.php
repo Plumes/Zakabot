@@ -61,6 +61,29 @@ class TelegramAPI {
         ob_end_clean();
 
         $return_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
         return array($return_code, $return_content);
+    }
+
+    public function sendHTMLText($chat_id, $reply_content) {
+        $api_url = $this->api_base."sendMessage";
+        $post_data = [
+            'chat_id' => $chat_id,
+            'text' => $reply_content,
+            'parse_mode' => 'HTML'
+        ];
+        list($return_code, $return_content) = $this->http_post_data($api_url, json_encode($post_data));
+        return "success";
+    }
+
+    public function sendPhoto($chat_id, $reply_content, $cover_image) {
+        $api_url = $this->api_base."sendPhoto";
+        $post_data = [
+            'chat_id' => $chat_id,
+            'photo' => $cover_image,
+            'caption' => $reply_content
+        ];
+        list($return_code, $return_content) = $this->http_post_data($api_url, json_encode($post_data));
+        return "success";
     }
 }
