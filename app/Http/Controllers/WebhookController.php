@@ -98,13 +98,13 @@ class WebhookController extends Controller
             return "error";
         }
         $subscribed_member_id_list = DB::table('idol_fans_relation')->where('fan_id', $fan->id)->pluck('member_id');
-        if(count($subscribed_member_id_list)<1) {
+        $subscribed_member_list = DB::table('idol_members')
+            ->where('group_id', $this->group_id)
+            ->whereIn('id', $subscribed_member_id_list)
+            ->get();
+        if(count($subscribed_member_list)<1) {
             $reply = ['text'=>"你还没有订阅成员"];
         } else {
-            $subscribed_member_list = DB::table('idol_members')
-                ->where('group_id', $this->group_id)
-                ->whereIn('id', $subscribed_member_id_list)
-                ->get();
             $inline_keyboard = [];
             $inline_keyboard_one_row = [];
             $i=0;
