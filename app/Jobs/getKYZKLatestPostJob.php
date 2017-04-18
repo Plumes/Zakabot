@@ -34,7 +34,7 @@ class getKYZKLatestPostJob extends Job
         //
         $member = DB::table('idol_members')->where('group_id', 1)->where('official_id', $this->official_id)->first();
         if(empty($member)) return;
-        $blog_url = "http://www.keyakizaka46.com/s/k46o/diary/member/list?ima=0000&ct=".$member->official_id;
+        $blog_url = "http://www.keyakizaka46.com/s/k46o/diary/member/list?ima=0000&ct=".sprintf("%02d", $member->official_id);
         $html = file_get_contents($blog_url);
         $dom = new \DOMDocument();
         libxml_use_internal_errors(true);
@@ -62,7 +62,7 @@ class getKYZKLatestPostJob extends Job
         $post = DB::table('posts')->where('url_hash', md5($post_url))->first();
         if(!empty($post)) return;
         DB::table('posts')->insert([
-                'member_id' => intval($member->id),
+                'member_id' => $member->id,
                 'title' => $title,
                 'url' => $post_url,
                 'url_hash' => md5($post_url),
