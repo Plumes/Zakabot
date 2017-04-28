@@ -24,6 +24,7 @@ $app->post('/{bot_id}/hook', function ($bot_id) use ($app) {
         return "error";
     }
     $content = file_get_contents("php://input");
+    \Illuminate\Support\Facades\Log::info($content);
     $update = json_decode($content, true);
     if(isset($update['message']) && isset($update['message']['text'])) {
 
@@ -51,7 +52,7 @@ $app->post('/{bot_id}/hook', function ($bot_id) use ($app) {
             return $webhook_controller->$cmd_func_name();
         }
     } elseif (isset($update['callback_query'])) {
-        \Illuminate\Support\Facades\Log::info(json_encode($update));
+       // \Illuminate\Support\Facades\Log::info(json_encode($update));
         if(isset($update['callback_query']['data'])) {
             preg_match('/(\w+)@(\w+)/', $update['callback_query']['data'], $matches);
             if(count($matches)==3) {
