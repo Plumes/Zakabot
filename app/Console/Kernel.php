@@ -29,6 +29,7 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
+        //keyakizaka46 task
         $schedule->call(function () {
             $file_content = "";
             $content = file_get_contents("http://www.keyakizaka46.com/s/k46o/diary/member/list?ima=0000");
@@ -56,6 +57,7 @@ class Kernel extends ConsoleKernel
             }
         })->hourly();
 
+        //nogizak46 task
         $schedule->call(function () {
             $blog_url = "http://blog.nogizaka46.com/atom.xml";
             $html = file_get_contents($blog_url);
@@ -75,13 +77,23 @@ class Kernel extends ConsoleKernel
 
                 preg_match('/com\/(\S+)\/20/', $post_url, $matches);
                 $official_id = $matches[1];
-                if($official_id=="third") continue;
+                $member = null;
+                if($official_id=="third") {
+                    $member = DB::table('idol_members')->where('group_id', 2)->where('official_id', $official_id)->first();
+                } else {
+                    $third_member_names = ['伊藤理々杏','岩本蓮加','梅澤美波','大園桃子','久保史緒里','阪口珠美','佐藤楓','中村麗乃','向井葉月','山下美月','吉田綾乃クリスティー','与田祐希'];
+                    foreach ($third_member_names as $v) {
+                        if(mb_strpos($title, $v)!==false) {
+                            $member = DB::table('idol_members')->where('group_id', 2)->where('name', $v)->first();
+                            break;
+                        }
+                    }
+                }
+                if(empty($member)) continue;
 
                 $published_at = $xpath->query('published', $article)->item(0)->nodeValue;
                 $published_at = \DateTime::createFromFormat('Y-m-d\TH:i:s\Z', $published_at);
                 $published_at->setTimeZone(new \DateTimeZone('Asia/Tokyo'));
-
-                $member_name = $xpath->query('author/name', $article)->item(0)->nodeValue;
 
                 $content = $xpath->query('content', $article)->item(0);
                 $content_html = $dom->saveXML($content);
@@ -92,26 +104,15 @@ class Kernel extends ConsoleKernel
                     $cover_image = $matches[1];
                 }
 
-                $member = DB::table('idol_members')->where('group_id', 2)->where('official_id', $official_id)->first();
-                if(empty($member)) {
-                    $member_id = DB::table('idol_members')->insertGetId([
-                        'group_id'=>2,
-                        'official_id'=>$official_id,
-                        'name'=>$member_name,
-                        'last_post_at'=>$published_at->format('Y-m-d H:i:s'),
-                        'created_at'=>date('Y-m-d H:i:s'),
-                        'updated_at'=>date('Y-m-d H:i:s')
-                    ]);
-                } else {
-                    DB::table('idol_members')->where('id', $member->id)->update([
-                        'last_post_at'=>$published_at->format('Y-m-d H:i:s'),
-                        'updated_at'=>date('Y-m-d H:i:s')
-                    ]);
-                    $member_id = $member->id;
-                }
+
+                DB::table('idol_members')->where('id', $member->id)->update([
+                    'last_post_at'=>$published_at->format('Y-m-d H:i:s'),
+                    'updated_at'=>date('Y-m-d H:i:s')
+                ]);
+
 
                 DB::table('posts')->insert([
-                        'member_id' => $member_id,
+                        'member_id' => $member->id,
                         'title' => $title,
                         'url' => $post_url,
                         'url_hash' => $post_url_hash,
@@ -123,12 +124,12 @@ class Kernel extends ConsoleKernel
                     ]
                 );
 
-                $fans_id_list = DB::table('idol_fans_relation')->where('member_id', $member_id)->pluck('fan_id');
+                $fans_id_list = DB::table('idol_fans_relation')->where('member_id', $member->id)->pluck('fan_id');
                 $fan_list = DB::table('fans')->whereIn('id', $fans_id_list)->get();
                 if($cover_image===false) {
-                    $reply_content = $member_name." 发表了新的日记 <b>".$title.'</b><br /><a href="'.$post_url.'">查看详情</a>';
+                    $reply_content = $member->name." 发表了新的日记 <b>".$title.'</b><br /><a href="'.$post_url.'">查看详情</a>';
                 } else {
-                    $reply_content = $member_name." 发表了新的日记\n".$title."\n链接: ".$post_url;
+                    $reply_content = $member->name." 发表了新的日记\n".$title."\n链接: ".$post_url;
                 }
 
                 $i=0;
