@@ -57,7 +57,7 @@ class Kernel extends ConsoleKernel
             }
         })->hourly();
 
-        //nogizak46 task
+        //nogizaka46 task
         $schedule->call(function () {
             $blog_url = "http://blog.nogizaka46.com/atom.xml";
             $html = file_get_contents($blog_url);
@@ -79,8 +79,6 @@ class Kernel extends ConsoleKernel
                 $official_id = $matches[1];
                 $member = null;
                 if($official_id=="third") {
-                    $member = DB::table('idol_members')->where('group_id', 2)->where('official_id', $official_id)->first();
-                } else {
                     $third_member_names = ['伊藤理々杏','岩本蓮加','梅澤美波','大園桃子','久保史緒里','阪口珠美','佐藤楓','中村麗乃','向井葉月','山下美月','吉田綾乃クリスティー','与田祐希'];
                     foreach ($third_member_names as $v) {
                         if(mb_strpos($title, $v)!==false) {
@@ -88,6 +86,8 @@ class Kernel extends ConsoleKernel
                             break;
                         }
                     }
+                } else {
+                    $member = DB::table('idol_members')->where('group_id', 2)->where('official_id', $official_id)->first();
                 }
                 if(empty($member)) continue;
 
