@@ -39,7 +39,7 @@ class Kernel extends ConsoleKernel
             $result = preg_replace("/member/", "\"member\"", $result);
             $result = preg_replace("/update/", "\"update\"", $result);
             $result = json_decode($result, true);
-            $member_list = DB::table('idol_members')->get();
+            $member_list = DB::table('idol_members')->where('group_id',1)->get();
             $member_last_post_list = [];
             foreach ($member_list as $member) {
                 $member_last_post_list[intval($member->official_id)] = $member->last_post_at;
