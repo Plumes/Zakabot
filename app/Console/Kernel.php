@@ -51,7 +51,7 @@ class Kernel extends ConsoleKernel
                 $current_update_at = preg_replace('/T/',' ', $current_update_at);
 
                 if(isset($member_last_post_list[intval($v['member'])]) && $current_update_at.":00">$member_last_post_list[intval($v['member'])]) {
-                    echo "craw kyzk ".$v['member']." current:".$current_update_at." last: ".$member_last_post_list[intval($v['member'])]."\n";
+                    Log::info("craw kyzk ".$v['member']." current:".$current_update_at." last: ".$member_last_post_list[intval($v['member'])]."\n");
                     dispatch( (new getKYZKLatestPostJob($v['member']))->delay(5*$i++) );
                 }
 
