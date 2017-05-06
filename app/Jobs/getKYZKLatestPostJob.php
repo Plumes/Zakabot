@@ -43,10 +43,10 @@ class getKYZKLatestPostJob extends Job
         $xpath = new \DOMXPath($dom);
 
         $title_node = $xpath->query("//div[@class='innerHead']/div[@class='box-ttl']")->item(0);
-        $title = trim($xpath->query('h3/a', $title_node)->item(0)->nodeValue);
+        $title = utf8_decode(trim($xpath->query('h3/a', $title_node)->item(0)->nodeValue));
         $post_url = $xpath->query('h3/a/@href', $title_node)->item(0)->nodeValue;
         $post_url = "http://www.keyakizaka46.com".$post_url;
-        $member_name = trim($xpath->query('p', $title_node)->item(0)->nodeValue);
+        $member_name = utf8_decode(trim($xpath->query('p', $title_node)->item(0)->nodeValue));
         $content = $xpath->query("//div[@class='box-article']")->item(0);
         $content_html = $dom->saveXML($content);
 //        $content_html = preg_replace('/<div .*>/', '', $content_html);
@@ -63,7 +63,7 @@ class getKYZKLatestPostJob extends Job
         if(!empty($post)) return;
         DB::table('posts')->insert([
                 'member_id' => $member->id,
-                'title' => utf8_decode($title),
+                'title' => $title,
                 'url' => $post_url,
                 'url_hash' => md5($post_url),
                 'content' => utf8_decode(trim($content_html)),
