@@ -57,7 +57,7 @@ class Kernel extends ConsoleKernel
                 }
 
             }
-        })->everyTenMinutes();
+        })->cron('0,30 * * * * *');
 
         //nogizaka46 task
         $schedule->call(function () {
@@ -82,6 +82,6 @@ class Kernel extends ConsoleKernel
                 dispatch( (new getNGZKLatestPostJob($article_html))->delay($delay) );
 
             }
-        })->hourlyAt(30);
+        })->cron('15,45 * * * * *');
     }
 }
