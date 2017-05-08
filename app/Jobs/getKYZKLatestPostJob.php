@@ -43,10 +43,10 @@ class getKYZKLatestPostJob extends Job
         $xpath = new \DOMXPath($dom);
 
         $title_node = $xpath->query("//div[@class='innerHead']/div[@class='box-ttl']")->item(0);
-        $title = utf8_decode(trim($xpath->query('h3/a', $title_node)->item(0)->nodeValue));
+        $title = trim(utf8_decode($xpath->query('h3/a', $title_node)->item(0)->nodeValue));
         $post_url = $xpath->query('h3/a/@href', $title_node)->item(0)->nodeValue;
         $post_url = "http://www.keyakizaka46.com".$post_url;
-        $member_name = utf8_decode(trim($xpath->query('p', $title_node)->item(0)->nodeValue));
+        $member_name = trim(utf8_decode($xpath->query('p', $title_node)->item(0)->nodeValue));
         $content = $xpath->query("//div[@class='box-article']")->item(0);
         $content_html = $dom->saveXML($content);
 //        $content_html = preg_replace('/<div .*>/', '', $content_html);

@@ -3,6 +3,7 @@
 namespace App\Console;
 
 use App\Jobs\getKYZKLatestPostJob;
+use App\Jobs\getNGZKLatestPostJob;
 use App\Jobs\sendUpdateMessageJob;
 use Carbon\Carbon;
 use Illuminate\Console\Scheduling\Schedule;
@@ -68,6 +69,7 @@ class Kernel extends ConsoleKernel
             $xpath = new \DOMXPath($dom);
 
             $article_list = $xpath->query("//entry");
+            $i=0;
             foreach ($article_list as $article) {
                 $title = $xpath->query("title", $article)->item(0)->nodeValue;
                 $post_url = $xpath->query('link/@href', $article)->item(0)->nodeValue;
@@ -75,69 +77,9 @@ class Kernel extends ConsoleKernel
 
                 $post = DB::table('posts')->where('url_hash', $post_url_hash)->first();
                 if(!empty($post)) continue;
-
-                preg_match('/com\/(\S+)\/20/', $post_url, $matches);
-                $official_id = $matches[1];
-                $member = null;
-                if($official_id=="third") {
-                    $third_member_names = ['伊藤理々杏','岩本蓮加','梅澤美波','大園桃子','久保史緒里','阪口珠美','佐藤楓','中村麗乃','向井葉月','山下美月','吉田綾乃クリスティー','与田祐希'];
-                    foreach ($third_member_names as $v) {
-                        if(mb_strpos($title, $v)!==false) {
-                            $member = DB::table('idol_members')->where('group_id', 2)->where('name', $v)->first();
-                            break;
-                        }
-                    }
-                } else {
-                    $member = DB::table('idol_members')->where('group_id', 2)->where('official_id', $official_id)->first();
-                }
-                if(empty($member)) continue;
-
-                $published_at = $xpath->query('published', $article)->item(0)->nodeValue;
-                $published_at = \DateTime::createFromFormat('Y-m-d\TH:i:s\Z', $published_at);
-                $published_at->setTimeZone(new \DateTimeZone('Asia/Tokyo'));
-
-                $content = $xpath->query('content', $article)->item(0);
-                $content_html = $dom->saveXML($content);
-
-                preg_match('/<img.+src="(\S+)"/U', $content_html, $matches);
-                $cover_image = false;
-                if(isset($matches[1])) {
-                    $cover_image = $matches[1];
-                }
-
-
-                DB::table('idol_members')->where('id', $member->id)->update([
-                    'last_post_at'=>$published_at->format('Y-m-d H:i:s'),
-                    'updated_at'=>date('Y-m-d H:i:s')
-                ]);
-
-
-                DB::table('posts')->insert([
-                        'member_id' => $member->id,
-                        'title' => $title,
-                        'url' => $post_url,
-                        'url_hash' => $post_url_hash,
-                        'content' => trim($content_html),
-                        'cover_image' => $cover_image!==false?$cover_image:'',
-                        'posted_at' => $published_at->format('Y-m-d H:i:s'),
-                        'created_at'=>date('Y-m-d H:i:s'),
-                        'updated_at'=>date('Y-m-d H:i:s')
-                    ]
-                );
-
-                $fans_id_list = DB::table('idol_fans_relation')->where('member_id', $member->id)->pluck('fan_id');
-                $fan_list = DB::table('fans')->whereIn('id', $fans_id_list)->get();
-                if($cover_image===false) {
-                    $reply_content = $member->name." 发表了新的日记 <b>".$title.'</b><br /><a href="'.$post_url.'">查看详情</a>';
-                } else {
-                    $reply_content = $member->name." 发表了新的日记\n".$title."\n链接: ".$post_url;
-                }
-
-                $i=0;
-                foreach ($fan_list as $fan) {
-                    Log::info('#'.$i);
-                    dispatch( (new sendUpdateMessageJob("309781356", $fan->chat_id, $reply_content, $cover_image))->delay($i++/10) );
-                }
+                $delay = $i++*5+1;
+                $article_html = $dom->saveXML($article);
+                dispatch( (new getNGZKLatestPostJob($article_html))->delay($delay) );
 
             }
         })->hourlyAt(30);
