@@ -39,19 +39,16 @@ class getKYZKLatestPostJob extends Job
         preg_match('/<article>(.*)<\/article>/uUs', $html, $matches);
         $dom = new \DOMDocument();
         libxml_use_internal_errors(true);
-        $dom->loadHTML($matches[0]);
+        $dom->loadHTML(mb_convert_encoding($matches[0], 'HTML-ENTITIES', 'UTF-8'));
         $xpath = new \DOMXPath($dom);
 
         $title_node = $xpath->query("//div[@class='innerHead']/div[@class='box-ttl']")->item(0);
-        $title = trim(utf8_decode($xpath->query('h3/a', $title_node)->item(0)->nodeValue));
+        $title = trim($xpath->query('h3/a', $title_node)->item(0)->nodeValue);
         $post_url = $xpath->query('h3/a/@href', $title_node)->item(0)->nodeValue;
         $post_url = "http://www.keyakizaka46.com".$post_url;
-        $member_name = trim(utf8_decode($xpath->query('p', $title_node)->item(0)->nodeValue));
+        $member_name = trim($xpath->query('p', $title_node)->item(0)->nodeValue);
         $content = $xpath->query("//div[@class='box-article']")->item(0);
         $content_html = $dom->saveXML($content);
-//        $content_html = preg_replace('/<div .*>/', '', $content_html);
-//        $content_html = preg_replace('/<\/div>/', '\n', $content_html);
-//        $content_html = preg_replace('/<br\/>/', '\n', $content_html);
         preg_match('/<img.+src="(\S+)"/U', $content_html, $matches);
         $cover_image = false;
         if(isset($matches[1])) {
@@ -66,7 +63,7 @@ class getKYZKLatestPostJob extends Job
                 'title' => $title,
                 'url' => $post_url,
                 'url_hash' => md5($post_url),
-                'content' => utf8_decode(trim($content_html)),
+                'content' => trim($content_html),
                 'cover_image' => $cover_image!==false?$cover_image:'',
                 'posted_at' => $post_time,
                 'created_at'=>$now,
