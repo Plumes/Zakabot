@@ -23,7 +23,11 @@ class CreatePostsTable extends Migration
             $table->string('preview')->nullable();
             $table->text('content');
             $table->dateTimeTz("posted_at");
+            $table->string('url_hash' , 64);
+            $table->string('cover_image_hash' , 64)->nullable("用于删除上传至sm.ms的图片");
+
             $table->timestamps();
+            $table->unique('url_hash');
         });
     }
 

@@ -54,6 +54,7 @@ class getNGZKLatestPostJob extends Job
         $content_html = $dom->saveXML($content);
 
         $cover_image = false;
+        $cover_image_hash = null;
         preg_match('/<a href="http:\/\/dcimg\.awalker\.jp\/img1\.php\?id=(\w+)".*<img/sU', $content_html, $matches);
         if(isset($matches[1])) {
             $img_url = "http://dcimg.awalker.jp/img1.php?id=".$matches[1];
@@ -68,6 +69,7 @@ class getNGZKLatestPostJob extends Job
                     $result = json_decode($result, true);
                     if(isset($result['data']['url'])) {
                         $cover_image = $result['data']['url'];
+                        $cover_image_hash = $result['data']['hash'];
                     }
                 }
             }
@@ -95,6 +97,7 @@ class getNGZKLatestPostJob extends Job
                 'url_hash' => md5($post_url),
                 'content' => trim($content_html),
                 'cover_image' => $cover_image!==false?$cover_image:'',
+                'cover_image_hash' => $cover_image_hash,
                 'posted_at' => $published_at->format('Y-m-d H:i:s'),
                 'created_at'=>date('Y-m-d H:i:s'),
                 'updated_at'=>date('Y-m-d H:i:s')
