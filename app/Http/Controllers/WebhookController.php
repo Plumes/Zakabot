@@ -24,6 +24,7 @@ class WebhookController extends Controller
     private $bot_id;
     private $group_id;
     private $tg_api;
+    private $fan=null;
 
     public function __construct($bot_id, $group_id, $update=false)
     {
@@ -34,13 +35,12 @@ class WebhookController extends Controller
         $this->bot_id = $bot_id;
         $this->group_id = $group_id;
         $this->tg_api = new TelegramAPI($this->bot_id);
-    }
 
-    //
-    public function start() {
         $now = Date('Y-m-d H:i:s');
         $fan = DB::table('fans')->where('telegram_user_id', $this->tg_user_id)->first();
-        if(!$fan && !empty($this->tg_user_id)) {
+        if(!empty($fan)) {
+            $this->fan = $fan;
+        } elseif ( !empty($this->tg_user_id) ) {
             DB::table('fans')->insert([
                 'username' => $this->update["message"]['from']['first_name'],
                 'telegram_user_id' => $this->tg_user_id,
@@ -48,18 +48,25 @@ class WebhookController extends Controller
                 'created_at' => $now,
                 'updated_at' => $now
             ]);
+            $this->fan = DB::table('fans')->where('telegram_user_id', $this->tg_user_id)->first();
+            $new_user_msg = ['text'=>$this->update["message"]['from']['first_name']." 加入"];
+            $this->tg_api->sendMessage("307558399",$new_user_msg);
         }
-        $new_user_msg = ['text'=>$this->update["message"]['from']['first_name']." 加入"];
-        $this->tg_api->sendMessage("307558399",$new_user_msg);
+    }
+
+    //
+    public function start() {
         $reply =  ['text'=>"欢迎使用\n/sublist 查看未订阅的成员列表\n/unsublist 查看已订阅的成员列表"];
         return $this->tg_api->sendMessage($this->chat_id, $reply);
     }
 
     public function subscribeList() {
-        $fan = DB::table('fans')->where('telegram_user_id', $this->tg_user_id)->first();
-        if(!$fan) {
-            return "error";
+        if(empty($this->fan)) {
+            $reply =  ['text'=>"Error"];
+            return $this->tg_api->sendMessage($this->chat_id, $reply);
         }
+        $fan = $this->fan;
+
         $subscribed_member_id_list = DB::table('idol_fans_relation')->where('fan_id', $fan->id)->pluck('member_id');
         $subscribed_member_id_list[] = '-1';
         $other_member_list = DB::table('idol_members')
@@ -93,10 +100,11 @@ class WebhookController extends Controller
     }
 
     public function unsubscribeList() {
-        $fan = DB::table('fans')->where('telegram_user_id', $this->tg_user_id)->first();
-        if(!$fan) {
-            return "error";
+        if(empty($this->fan)) {
+            $reply =  ['text'=>"Error"];
+            return $this->tg_api->sendMessage($this->chat_id, $reply);
         }
+        $fan = $this->fan;
         $subscribed_member_id_list = DB::table('idol_fans_relation')->where('fan_id', $fan->id)->pluck('member_id');
         $subscribed_member_list = DB::table('idol_members')
             ->where('group_id', $this->group_id)
