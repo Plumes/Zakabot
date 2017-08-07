@@ -118,8 +118,8 @@ class getNGZKLatestPostJob extends Job
 
         $i=0;
         foreach ($fan_list as $fan) {
-            Log::info('#NG'.$i);
-            dispatch( (new sendUpdateMessageJob("309781356", $fan->chat_id, $reply_content, $cover_image))->delay($i++/10) );
+            Log::info(Date("Y-m-d H:i:s")."notify ".$fan->username." about ".$member->name." new post");
+            dispatch( new sendUpdateMessageJob("309781356", $fan->chat_id, $reply_content, $cover_image) );
         }
     }
 }
