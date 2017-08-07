@@ -10,6 +10,7 @@ namespace App\Jobs;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Libraries\HTTPUtil;
+use Exception;
 
 class getNGZKLatestPostJob extends Job
 {
@@ -121,5 +122,18 @@ class getNGZKLatestPostJob extends Job
             Log::info(Date("Y-m-d H:i:s")."notify ".$fan->username." about ".$member->name." new post");
             dispatch( new sendUpdateMessageJob("309781356", $fan->chat_id, $reply_content, $cover_image) );
         }
+    }
+
+    /**
+     * The job failed to process.
+     *
+     * @param  Exception  $exception
+     * @return void
+     */
+    public function failed(Exception $exception)
+    {
+        // Send user notification of failure, etc...
+        $msg = $exception->getMessage();
+        dispatch( new sendUpdateMessageJob("309781356", "307558399", $msg, false) );
     }
 }
