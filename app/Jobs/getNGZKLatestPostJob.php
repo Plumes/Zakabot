@@ -30,6 +30,11 @@ class getNGZKLatestPostJob extends Job
         $title = $xpath->query("title")->item(0)->nodeValue;
         $post_url = $xpath->query('link/@href')->item(0)->nodeValue;
 
+        //防止执行重复的任务
+        $post_url_hash = md5($post_url);
+        $check_post = DB::table('posts')->where('url_hash', $post_url_hash)->first();
+        if(!empty($check_post)) return;
+
         preg_match('/com\/(\S+)\/20/', $post_url, $matches);
         $official_id = $matches[1];
         $member = null;
