@@ -119,7 +119,7 @@ class getNGZKLatestPostJob extends Job
 
         $i=0;
         foreach ($fan_list as $fan) {
-            Log::info(Date("Y-m-d H:i:s")."notify ".$fan->username." about ".$member->name." new post");
+            Log::info("notify ".$fan->username." about ".$member->name." new post");
             dispatch( new sendUpdateMessageJob("309781356", $fan->chat_id, $reply_content, $cover_image) );
         }
     }
