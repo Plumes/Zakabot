@@ -24,7 +24,7 @@ $app->post('/{bot_id}/hook', function ($bot_id) use ($app) {
         return "error";
     }
     $content = file_get_contents("php://input");
-    //\Illuminate\Support\Facades\Log::info($content);
+    \Illuminate\Support\Facades\Log::info($content);
     $update = json_decode($content, true);
     if(isset($update['message']) && isset($update['message']['text'])) {
 
