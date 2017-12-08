@@ -40,11 +40,13 @@ class Kernel extends ConsoleKernel
             $result = preg_replace("/member/", "\"member\"", $result);
             $result = preg_replace("/update/", "\"update\"", $result);
             $result = json_decode($result, true);
+            if(empty($result)) return;
             $member_list = DB::table('idol_members')->where('group_id',1)->get();
             $member_last_post_list = [];
             foreach ($member_list as $member) {
                 $member_last_post_list[intval($member->official_id)] = $member->last_post_at;
             }
+            $member_last_post_list[1000] = "2017-01-01 00:00:00";//平假名二期特殊处理
             $i=0;
             foreach ($result as $v) {
                 preg_match('/(.*)\+/', $v['update'], $matches);
@@ -69,6 +71,7 @@ class Kernel extends ConsoleKernel
             $xpath = new \DOMXPath($dom);
 
             $article_list = $xpath->query("//entry");
+            if(empty($article_list)) return;
             $i=0;
             foreach ($article_list as $article) {
                 $title = $xpath->query("title", $article)->item(0)->nodeValue;

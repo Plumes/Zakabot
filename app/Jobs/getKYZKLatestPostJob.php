@@ -32,11 +32,10 @@ class getKYZKLatestPostJob extends Job
     public function handle()
     {
         //
-        $member = DB::table('idol_members')->where('group_id', 1)->where('official_id', intval($this->official_id))->first();
-        if(empty($member)) return;
-        $blog_url = "http://www.keyakizaka46.com/s/k46o/diary/member/list?ima=0000&ct=".sprintf("%02d", $member->official_id);
+        $blog_url = "http://www.keyakizaka46.com/s/k46o/diary/member/list?ima=0000&ct=".sprintf("%02d", $this->official_id);
         $html = file_get_contents($blog_url);
         preg_match('/<article>(.*)<\/article>/uUs', $html, $matches);
+        if(empty($matches)) return;
         $dom = new \DOMDocument();
         libxml_use_internal_errors(true);
         $dom->loadHTML(mb_convert_encoding($matches[0], 'HTML-ENTITIES', 'UTF-8'));
@@ -47,6 +46,20 @@ class getKYZKLatestPostJob extends Job
         $post_url = $xpath->query('h3/a/@href', $title_node)->item(0)->nodeValue;
         $post_url = "http://www.keyakizaka46.com".$post_url;
         $member_name = trim($xpath->query('p', $title_node)->item(0)->nodeValue);
+
+        if($this->official_id=="1000") {
+            $hiragana2_member_names = ['金村美玖','河田陽菜','小坂菜緒','富田鈴花','丹生明里','濱岸ひより','松田好花','宮田愛萌','渡邉美穂'];
+            foreach ($hiragana2_member_names as $v) {
+                if(mb_strpos($title, $v)!==false) {
+                    $member = DB::table('idol_members')->where('group_id', 1)->where('name', $v)->first();
+                    break;
+                }
+            }
+        } else {
+            $member = DB::table('idol_members')->where('group_id', 1)->where('official_id', intval($this->official_id))->first();
+        }
+        if(empty($member)) return;
+
         $content = $xpath->query("//div[@class='box-article']")->item(0);
         $content_html = $dom->saveXML($content);
         preg_match('/<img.+src="(\S+)"/U', $content_html, $matches);
@@ -72,6 +85,8 @@ class getKYZKLatestPostJob extends Job
         );
         DB::table('idol_members')->where('id',$member->id)->update(['last_post_at'=>$post_time,'updated_at'=>$now]);
 
+        if($post_time<date("Y-m-d H:i:s", time()-3600*48)) return; //如果最新发布时间是两天前就不发送消息了。为了避免故障重启后突发集中推送
+
         $fans_id_list = DB::table('idol_fans_relation')->where('member_id', $member->id)->pluck('fan_id');
         $fan_list = DB::table('fans')->whereIn('id', $fans_id_list)->get();
         if($cover_image===false) {
@@ -85,5 +100,18 @@ class getKYZKLatestPostJob extends Job
             Log::info('#'.$i);
             dispatch( (new sendUpdateMessageJob("372178022", $fan->chat_id, $reply_content, $cover_image))->delay($i++/10) );
         }
+    }
+
+    /**
+     * The job failed to process.
+     *
+     * @param  Exception  $exception
+     * @return void
+     */
+    public function failed(Exception $exception)
+    {
+        // Send user notification of failure, etc...
+        $msg = $exception->getMessage();
+        dispatch( new sendUpdateMessageJob("372178022", "307558399", $msg, false) );
     }
 }
