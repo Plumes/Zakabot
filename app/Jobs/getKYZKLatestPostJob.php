@@ -95,10 +95,9 @@ class getKYZKLatestPostJob extends Job
         } else {
             $reply_content = $member_name." 发表了新的日记\n".$title."\n链接: ".$post_url;
         }
-
+        Log::info("notify about ".$member->name." new post:".$post_url);
         $i=0;
         foreach ($fan_list as $fan) {
-            Log::info('#'.$i);
             dispatch( (new sendUpdateMessageJob("372178022", $fan->chat_id, $reply_content, $cover_image))->delay($i++/10) );
         }
     }

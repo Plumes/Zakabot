@@ -55,10 +55,6 @@ class getNGZKLatestPostJob extends Job
         }
         if(empty($member)) return;
 
-        $published_at = $xpath->query('published')->item(0)->nodeValue;
-        $published_at = \DateTime::createFromFormat('Y-m-d\TH:i:s\Z', $published_at);
-        $published_at->setTimeZone(new \DateTimeZone('Asia/Tokyo'));
-
         $content = $xpath->query('content')->item(0);
         $content_html = $dom->saveXML($content);
 
@@ -119,11 +115,10 @@ class getNGZKLatestPostJob extends Job
         } else {
             $reply_content = $member->name." 发表了新的日记\n".$title."\n链接: ".$post_url;
         }
-
+        Log::info("notify about ".$member->name." new post:".$post_url);
         $i=0;
         foreach ($fan_list as $fan) {
-            Log::info("notify ".$fan->username." about ".$member->name." new post");
-            dispatch( new sendUpdateMessageJob("309781356", $fan->chat_id, $reply_content, $cover_image) );
+            dispatch( (new sendUpdateMessageJob("309781356", $fan->chat_id, $reply_content, $cover_image))->delay($i++/10) );
         }
     }
 
