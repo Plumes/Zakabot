@@ -49,9 +49,10 @@ class getKYZKLatestPostJob extends Job
 
         if($this->official_id=="1000") {
             $hiragana2_member_names = ['金村美玖','河田陽菜','小坂菜緒','富田鈴花','丹生明里','濱岸ひより','松田好花','宮田愛萌','渡邉美穂'];
-            foreach ($hiragana2_member_names as $v) {
+            $hiragana2_official_names = ['金村 美玖','河田 陽菜','小坂 菜緒','富田 鈴花','丹生 明里','濱岸 ひより','松田 好花','宮田 愛萌','渡邉 美穂'];
+            foreach ($hiragana2_member_names as $k=>$v) {
                 if(mb_strpos($title, $v)!==false) {
-                    $member = DB::table('idol_members')->where('group_id', 1)->where('name', $v)->first();
+                    $member = DB::table('idol_members')->where('group_id', 1)->where('name', $hiragana2_official_names[$k])->first();
                     break;
                 }
             }
