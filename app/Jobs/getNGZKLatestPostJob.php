@@ -30,11 +30,11 @@ class getNGZKLatestPostJob extends Job
         $xpath = new \DOMXPath($dom);
         $title = $xpath->query("title")->item(0)->nodeValue;
         $post_url = $xpath->query('link/@href')->item(0)->nodeValue;
-        $publish_at_str = $published_at = $xpath->query('published')->item(0)->nodeValue;
+        $published_at = $xpath->query('published')->item(0)->nodeValue;
         $published_at = \DateTime::createFromFormat('Y-m-d\TH:i:s\Z', $published_at);
         $published_at->setTimeZone(new \DateTimeZone('Asia/Tokyo'));
         //防止执行重复的任务
-        $post_url_hash = md5($post_url.$publish_at_str);
+        $post_url_hash = md5($post_url);
         $check_post = DB::table('posts')->where('url_hash', $post_url_hash)->first();
         if(!empty($check_post)) return;
 
