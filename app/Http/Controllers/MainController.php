@@ -72,6 +72,7 @@ class MainController extends Controller
             }
 
         }
+        return "123";
     }
 
 }
