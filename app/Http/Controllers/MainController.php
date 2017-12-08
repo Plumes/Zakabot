@@ -46,7 +46,7 @@ class MainController extends Controller
     }
     public function test() {
         $content = file_get_contents("http://www.keyakizaka46.com/s/k46o/diary/member/list?ima=0000");
-        preg_match("/blogUpdate = (\[.*\])/s", $content, $matches);
+        preg_match("/blogUpdate = (\[.*\])/Us", $content, $matches);
         $result = $matches[1];
         $result = preg_replace("/\n/s", "", $result);
         $result = preg_replace("/member/", "\"member\"", $result);
