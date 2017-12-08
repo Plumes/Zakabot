@@ -44,5 +44,34 @@ class MainController extends Controller
             dispatch( (new sendUpdateMessageJob("372178022", $fan->chat_id, $reply_content, false)) );
         }
     }
+    public function test() {
+        $content = file_get_contents("http://www.keyakizaka46.com/s/k46o/diary/member/list?ima=0000");
+        preg_match("/blogUpdate = (\[.*\])/s", $content, $matches);
+        $result = $matches[1];
+        $result = preg_replace("/\n/s", "", $result);
+        $result = preg_replace("/member/", "\"member\"", $result);
+        $result = preg_replace("/update/", "\"update\"", $result);
+        $result = json_decode($result, true);
+        if(empty($result)) return;
+        $member_list = DB::table('idol_members')->where('group_id',1)->get();
+        $member_last_post_list = [];
+        foreach ($member_list as $member) {
+            $member_last_post_list[intval($member->official_id)] = $member->last_post_at;
+        }
+        $member_last_post_list[1000] = "2017-01-01 00:00:00";//平假名二期特殊处理
+        $i=0;
+        var_dump($result);
+        foreach ($result as $v) {
+            preg_match('/(.*)\+/', $v['update'], $matches);
+            $current_update_at = $matches[1];
+            $current_update_at = preg_replace('/T/',' ', $current_update_at);
+
+            if(isset($member_last_post_list[intval($v['member'])]) && $current_update_at.":00">$member_last_post_list[intval($v['member'])]) {
+                print_r("craw kyzk ".$v['member']." current:".$current_update_at." last: ".$member_last_post_list[intval($v['member'])]."\n");
+                //dispatch( (new getKYZKLatestPostJob($v['member']))->delay(5*$i++) );
+            }
+
+        }
+    }
 
 }

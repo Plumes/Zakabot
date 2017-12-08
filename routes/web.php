@@ -85,3 +85,4 @@ $app->post('/{bot_id}/hook', function ($bot_id) use ($app) {
 });
 
 $app->get('crawl', ['uses'=>'MainController@crawl']);
+$app->get('test', ['uses'=>'MainController@test']);
