@@ -59,7 +59,7 @@ class Kernel extends ConsoleKernel
                 }
 
             }
-        })->cron('0,30 * * * * *');
+        })->cron('0,10,20,30,40,50 * * * * *');
 
         //nogizaka46 task
         $schedule->call(function () {
@@ -86,6 +86,6 @@ class Kernel extends ConsoleKernel
                 dispatch( (new getNGZKLatestPostJob($article_html))->delay($delay) );
 
             }
-        })->cron('15,45 * * * * *');
+        })->cron('5,15,25,35,45,55 * * * * *');
     }
 }
