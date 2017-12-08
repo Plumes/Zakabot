@@ -12,6 +12,7 @@ use App\Jobs\getKYZKLatestPostJob;
 use App\Jobs\sendUpdateMessageJob;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use App\Libraries\HTTPUtil;
 
 class MainController extends Controller
 {
@@ -45,34 +46,30 @@ class MainController extends Controller
         }
     }
     public function test() {
-        $content = file_get_contents("http://www.keyakizaka46.com/s/k46o/diary/member/list?ima=0000");
-        preg_match("/blogUpdate = (\[.*\])/Us", $content, $matches);
-        $result = $matches[1];
-        $result = preg_replace("/\n/s", "", $result);
-        $result = preg_replace("/member/", "\"member\"", $result);
-        $result = preg_replace("/update/", "\"update\"", $result);
-        $result = json_decode($result, true);
-        if(empty($result)) return;
-        $member_list = DB::table('idol_members')->where('group_id',1)->get();
-        $member_last_post_list = [];
-        foreach ($member_list as $member) {
-            $member_last_post_list[intval($member->official_id)] = $member->last_post_at;
-        }
-        $member_last_post_list[1000] = "2017-01-01 00:00:00";//平假名二期特殊处理
-        $i=0;
-        var_dump($result);
-        foreach ($result as $v) {
-            preg_match('/(.*)\+/', $v['update'], $matches);
-            $current_update_at = $matches[1];
-            $current_update_at = preg_replace('/T/',' ', $current_update_at);
-
-            if(isset($member_last_post_list[intval($v['member'])]) && $current_update_at.":00">$member_last_post_list[intval($v['member'])]) {
-                print_r("craw kyzk ".$v['member']." current:".$current_update_at." last: ".$member_last_post_list[intval($v['member'])]."\n");
-                //dispatch( (new getKYZKLatestPostJob($v['member']))->delay(5*$i++) );
+        $content = file_get_contents("http://blog.nogizaka46.com/third/2017/12/042080.php");
+        preg_match('/<a href="http:\/\/dcimg\.awalker\.jp\/img1\.php\?id=(\w+)".*<img/sU', $content, $matches);
+        if(isset($matches[1])) {
+            $img_url = "http://dcimg.awalker.jp/img1.php?id=".$matches[1];
+            $url_hash = md5($img_url);
+            HTTPUtil::get($img_url, $url_hash);
+            $img_url = "http://dcimg.awalker.jp/img2.php?sec_key=".$matches[1];
+            $img_file = HTTPUtil::get($img_url, $url_hash);
+            if($img_file!=false) {
+                file_put_contents("/tmp/".$url_hash.".jpg", $img_file);
+                $result = HTTPUtil::post("https://sm.ms/api/upload", ['smfile'=>curl_file_create("/tmp/".$url_hash.".jpg")]);
+                if($result!==false) {
+                    $result = json_decode($result, true);
+                    if(isset($result['data']['url'])) {
+                        $cover_image = $result['data']['url'];
+                        $cover_image_hash = $result['data']['hash'];
+                    }
+                }
             }
+            var_dump($cover_image);
+            if(file_exists("/tmp/".$url_hash)) unlink("/tmp/".$url_hash);
+            if(file_exists("/tmp/".$url_hash.".jpg")) unlink("/tmp/".$url_hash.".jpg");
 
         }
-        return "123";
     }
 
 }

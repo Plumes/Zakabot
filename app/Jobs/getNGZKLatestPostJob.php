@@ -70,6 +70,7 @@ class getNGZKLatestPostJob extends Job
             if($img_file!=false) {
                 file_put_contents("/tmp/".$url_hash.".jpg", $img_file);
                 $result = HTTPUtil::post("https://sm.ms/api/upload", ['smfile'=>curl_file_create("/tmp/".$url_hash.".jpg")]);
+                Log::info($result);
                 if($result!==false) {
                     $result = json_decode($result, true);
                     if(isset($result['data']['url'])) {
