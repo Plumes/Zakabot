@@ -44,6 +44,7 @@ $app->post('/{bot_id}/hook', function ($bot_id) use ($app) {
                 $cmd_func_name = "unsubscribeList";
                 break;
             default:
+                \Illuminate\Support\Facades\Log::info("unknown command:".$command." by ".json_encode($update['message']['from']));
                 $cmd_func_name = "";
                 break;
         }
@@ -68,6 +69,7 @@ $app->post('/{bot_id}/hook', function ($bot_id) use ($app) {
                     $cmd_func_name = "unsubscribe";
                     break;
                 default:
+                    \Illuminate\Support\Facades\Log::info("unknown callback command:".$command." by ".json_encode($update['message']['from']));
                     $cmd_func_name = "";
                     break;
             }
