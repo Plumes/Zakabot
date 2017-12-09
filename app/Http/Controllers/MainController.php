@@ -13,6 +13,7 @@ use App\Jobs\sendUpdateMessageJob;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use App\Libraries\HTTPUtil;
+use phpDocumentor\Reflection\Types\Null_;
 
 class MainController extends Controller
 {
@@ -63,15 +64,16 @@ class MainController extends Controller
                 var_dump($result);
                 if($result!==false) {
                     $result = json_decode($result, true);
-                    if(isset($result['data']['url'])) {
-                        $cover_image = $result['data']['url'];
-                        $cover_image_hash = $result['data']['hash'];
+                    if(is_array($result['result']['photo'])) {
+                        $size = count($result['result']['photo']);
+                        $cover_image = $result['result']['photo'][$size-1]['file_id'];
+                        $cover_image_hash = null;
                     }
                 }
             }
-            var_dump($cover_image);
             if(file_exists("/tmp/".$url_hash)) unlink("/tmp/".$url_hash);
             if(file_exists("/tmp/".$url_hash.".jpg")) unlink("/tmp/".$url_hash.".jpg");
+            dispatch( (new sendUpdateMessageJob("309781356", "307558399", "test", $cover_image))->delay(1) );
 
         }
     }
