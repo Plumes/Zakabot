@@ -27,10 +27,10 @@ $app->post('/{bot_id}/hook', function ($bot_id) use ($app) {
     \Illuminate\Support\Facades\Log::info($content);
     $update = json_decode($content, true);
     if(isset($update['message']) && isset($update['message']['text'])) {
-
+        $webhook_controller = new App\Http\Controllers\WebhookController($bot_id, $group_id, $update);
         preg_match("/\/(\w+)/", $update['message']['text'], $matches);
         if (!isset($matches[1])) {
-            \Illuminate\Support\Facades\Log::info("unknown content:".$update['message']['text']." by ".json_encode($update['message']['from']));
+            $webhook_controller->default_reply("unknown content:".$update['message']['text']." by ".json_encode($update['message']['from']));
             return "success";
         }
         $command = $matches[1];
@@ -45,13 +45,13 @@ $app->post('/{bot_id}/hook', function ($bot_id) use ($app) {
                 $cmd_func_name = "unsubscribeList";
                 break;
             default:
-                \Illuminate\Support\Facades\Log::info("unknown command:".$command." by ".json_encode($update['message']['from']));
                 $cmd_func_name = "";
                 break;
         }
-        $webhook_controller = new App\Http\Controllers\WebhookController($bot_id, $group_id, $update);
         if (method_exists($webhook_controller, $cmd_func_name)) {
             return $webhook_controller->$cmd_func_name();
+        } else {
+            $webhook_controller->default_reply("unknown command:".$update['message']['text']." by ".json_encode($update['message']['from']));
         }
     } elseif (isset($update['callback_query'])) {
        // \Illuminate\Support\Facades\Log::info(json_encode($update));
@@ -70,7 +70,6 @@ $app->post('/{bot_id}/hook', function ($bot_id) use ($app) {
                     $cmd_func_name = "unsubscribe";
                     break;
                 default:
-                    \Illuminate\Support\Facades\Log::info("unknown callback command:".$command." by ".json_encode($update['message']['from']));
                     $cmd_func_name = "";
                     break;
             }

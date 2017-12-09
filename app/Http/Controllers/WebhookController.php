@@ -51,9 +51,6 @@ class WebhookController extends Controller
             $this->fan = DB::table('fans')->where('telegram_user_id', $this->tg_user_id)->first();
             $new_user_msg = ['text'=>$this->update["message"]['from']['first_name']." 加入"];
             $this->tg_api->sendMessage("307558399",$new_user_msg);
-
-            $new_user_msg = ['text'=>$this->update["message"]['from']['first_name']." 你好, 非常抱歉, 5月8日旧服务器发生了故障.\n当天进行了迁移，且同时进行了架构改造, 重置了关注列表, 所以如果你是5月8日之前加入的老用户, 请麻烦重新关注一下你喜爱的成员"];
-            $this->tg_api->sendMessage($this->chat_id, $new_user_msg);
         }
     }
 
@@ -137,5 +134,11 @@ class WebhookController extends Controller
         }
         $this->tg_api->sendMessage($this->chat_id, $reply);
         return "success";
+    }
+
+    public function default_reply($msg) {
+        $this->tg_api->sendMessage("307558399",$msg);
+        $reply =  ['text'=>"暂不支持你输入的指令"];
+        return $this->tg_api->sendMessage($this->chat_id, $reply);
     }
 }
