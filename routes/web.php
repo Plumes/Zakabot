@@ -30,6 +30,7 @@ $app->post('/{bot_id}/hook', function ($bot_id) use ($app) {
 
         preg_match("/\/(\w+)/", $update['message']['text'], $matches);
         if (!isset($matches[1])) {
+            \Illuminate\Support\Facades\Log::info("unknown content:".$update['message']['text']." by ".json_encode($update['message']['from']));
             return "success";
         }
         $command = $matches[1];
