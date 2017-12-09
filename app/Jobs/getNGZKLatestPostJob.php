@@ -69,13 +69,16 @@ class getNGZKLatestPostJob extends Job
             $img_file = HTTPUtil::get($img_url, $url_hash);
             if($img_file!=false) {
                 file_put_contents("/tmp/".$url_hash.".jpg", $img_file);
-                $result = HTTPUtil::post("https://sm.ms/api/upload", ['smfile'=>curl_file_create("/tmp/".$url_hash.".jpg")]);
-                Log::info($result);
+                $result = HTTPUtil::post("https://api.telegram.org/bot309781356:AAFl5KmawS2-x56V8jv-c4t43pjnPFRLPMs/sendPhoto", [
+                    'chat_id'=>"307558399",
+                    'photo'=>curl_file_create("/tmp/".$url_hash.".jpg")
+                ]);
                 if($result!==false) {
                     $result = json_decode($result, true);
-                    if(isset($result['data']['url'])) {
-                        $cover_image = $result['data']['url'];
-                        $cover_image_hash = $result['data']['hash'];
+                    if(is_array($result['result']['photo'])) {
+                        $size = count($result['result']['photo']);
+                        $cover_image = $result['result']['photo'][$size-1]['file_id'];
+                        $cover_image_hash = null;
                     }
                 }
             }

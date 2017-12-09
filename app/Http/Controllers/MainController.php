@@ -61,7 +61,6 @@ class MainController extends Controller
                     'chat_id'=>"307558399",
                     'photo'=>curl_file_create("/tmp/".$url_hash.".jpg")
                 ]);
-                var_dump($result);
                 if($result!==false) {
                     $result = json_decode($result, true);
                     if(is_array($result['result']['photo'])) {
