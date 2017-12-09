@@ -137,7 +137,7 @@ class WebhookController extends Controller
     }
 
     public function default_reply($msg) {
-        $this->tg_api->sendMessage("307558399",$msg);
+        $this->tg_api->sendMessage("307558399",["text"=>$msg]);
         $reply =  ['text'=>"暂不支持你输入的指令"];
         return $this->tg_api->sendMessage($this->chat_id, $reply);
     }
