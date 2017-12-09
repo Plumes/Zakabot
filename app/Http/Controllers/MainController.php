@@ -56,7 +56,11 @@ class MainController extends Controller
             $img_file = HTTPUtil::get($img_url, $url_hash);
             if($img_file!=false) {
                 file_put_contents("/tmp/".$url_hash.".jpg", $img_file);
-                $result = HTTPUtil::post("https://sm.ms/api/upload", ['smfile'=>curl_file_create("/tmp/".$url_hash.".jpg")]);
+                $result = HTTPUtil::post("https://api.telegram.org/bot309781356:AAFl5KmawS2-x56V8jv-c4t43pjnPFRLPMs/", [
+                    'chat_id'=>"307558399",
+                    'photo'=>curl_file_create("/tmp/".$url_hash.".jpg")
+                ]);
+                var_dump($result);
                 if($result!==false) {
                     $result = json_decode($result, true);
                     if(isset($result['data']['url'])) {
