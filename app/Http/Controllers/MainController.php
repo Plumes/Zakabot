@@ -77,4 +77,27 @@ class MainController extends Controller
         }
     }
 
+    public function generateAMP($member_id, $post_id) {
+        $post = DB::table('posts')->where('id',8316)->first();
+        $member = DB::table('idol_members')->where('id', $post->member_id)->first();
+        $post->content = preg_replace("/<content.*>/U",'', $post->content);
+        $post->content = str_replace("]]&gt;", '', $post->content);
+        $post->content = str_replace("</content>", '', $post->content);
+        $post->content = str_replace('<div> </div>', '<p></p>', $post->content);
+        $post->content = preg_replace("/<div>(<font size=\"1\">)+<br\/>(<\/font>)+<\/div>/", "<p></p>", $post->content);
+        $post->content = str_replace('<font size="1">', '<div class="font-size-1">', $post->content);
+        $post->content = str_replace('</font>', '</div>', $post->content);
+        $replace_pattarn = '<a$1><div class="fixed-height-container"><amp-img class="contain" layout="fill" src="$2"></amp-img></div></a>';
+        $post->content = preg_replace("/<a(.*)><img.+src=\"([\w,:,\/,\.]+)\".*\/><\/a>/U", $replace_pattarn, $post->content);
+        if(mb_strlen($post->title)>20) {
+            $post->abbr_title = (mb_substr($post->title,0,20))."...";
+        } else {
+            $post->abbr_title = $post->title;
+        }
+        if(empty($member->profile_pic)) {
+            $member->profile_pic = url("/images/nogizaka46_log.png");
+        }
+        return view('amp_post',['post'=>$post,'member'=>$member]);
+    }
+
 }

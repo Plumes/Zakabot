@@ -88,3 +88,4 @@ $app->post('/{bot_id}/hook', function ($bot_id) use ($app) {
 
 $app->get('crawl', ['uses'=>'MainController@crawl']);
 $app->get('test', ['uses'=>'MainController@test']);
+$app->get('amp/nogizaka46/{member_id}/{post_id}', ['uses'=>'MainController@generateAMP']);
