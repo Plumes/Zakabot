@@ -8,10 +8,7 @@
     <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
     <style amp-custom>
         .header {
-            position: absolute;
             width: 100%;
-            height: 80px;
-            padding: 0 25px;
             background-color: #fff;
             box-shadow: 0 0 40px 0 rgba(0,0,0,0.5);
             font-size: 14px;
@@ -33,14 +30,14 @@
             background-color: rgb(241,241,243);
             border-radius: 30px;
             overflow: hidden;
-            display: inline-block;
+            float: left;
+            margin-left: 15px;
         }
         div.meta {
-            display: inline-block;
-            height: 60px;
-            margin-top: 10px;
             vertical-align: top;
-            margin-left: 15px;
+            width: 100%;
+            padding: 10px 20px 10px 75px;
+            box-sizing: border-box;
         }
         .author-name, .post-date {
             display: inline-block;
@@ -54,6 +51,9 @@
             color: #333333;
             height: 30px;
             line-height: 30px;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow:ellipsis;
         }
         amp-img.contain img {
             object-fit: contain;
