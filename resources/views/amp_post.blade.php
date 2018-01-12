@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <script async src="https://cdn.ampproject.org/v0.js"></script>
     <title>{{ $member->name }} - {{ $post->abbr_title }}</title>
-    <link rel="canonical" href="hello-world.html">
+    <link rel="canonical" href="{!! $post->url !!}">
     <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
     <style amp-custom>
         .header {
