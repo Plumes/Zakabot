@@ -3,12 +3,14 @@
 <head>
     <meta charset="utf-8">
     <script async src="https://cdn.ampproject.org/v0.js"></script>
-    <title>{{ $member->name }} - {{ $post->abbr_title }}</title>
-    <link rel="canonical" href="{!! $post->url !!}">
+    <title>乃木坂46 公式ブログ</title>
+    <link rel="canonical" href="http://blog.nogizaka46.com/">
     <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
     <style amp-custom>
+        body {
+            background: #7e1083;
+        }
         .header {
-            position: absolute;
             width: 100%;
             height: 80px;
             padding: 0 25px;
@@ -44,16 +46,32 @@
         }
         .author-name, .post-date {
             display: inline-block;
+            font-size: 1.5em;
+            color: #333333;
+            height: 30px;
+            line-height: 30px;
+        }
+        .title {
             font-size: 16px;
             color: #777777;
             height: 30px;
             line-height: 30px;
         }
-        .title {
-            font-size: 1.5rem;
+        div.content .meta,div.content .profile-pic {
+            margin: 0 0 20px 0;
+        }
+        div.content .author-name  {
+            font-size: 14px;
+            color: #777777;
+        }
+        div.content .post-date {
+            font-size: 14px;
+            color: #777777;
+            margin-left: 10px;
+        }
+        div.content .title {
+            font-size: 18px;
             color: #333333;
-            height: 30px;
-            line-height: 30px;
         }
         amp-img.contain img {
             object-fit: contain;
@@ -64,8 +82,8 @@
             height: 300px;
         }
         article {
-            padding: 105px 15px 30px 15px;
-            background: #7e1083;
+            padding: 30px 15px 30px 15px;
+
         }
         article div.content {
             padding: 20px 10px;
@@ -96,6 +114,20 @@
             align-self: flex-end;
             float: right;
         }
+        .readmore {
+            font-size: 16px;
+            padding: 5px 10px;
+            border-radius: 3px;
+            border: 1px solid #7e1083;
+            color: #7e1083;
+            display: inline-block;
+            text-decoration: none;
+            margin-top: 20px;
+        }
+        a.readmore:visited {
+            text-decoration: none;
+            color: #7e1083;
+        }
     </style>
     <style amp-boilerplate>body{-webkit-animation:-amp-start 8s steps(1,end) 0s 1 normal both;-moz-animation:-amp-start 8s steps(1,end) 0s 1 normal both;-ms-animation:-amp-start 8s steps(1,end) 0s 1 normal both;animation:-amp-start 8s steps(1,end) 0s 1 normal both}@-webkit-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-moz-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-ms-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-o-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}</style><noscript><style amp-boilerplate>body{-webkit-animation:none;-moz-animation:none;-ms-animation:none;animation:none}</style></noscript>
     <script type="application/ld+json"><?php echo json_encode($schema,JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)?></script>
@@ -104,32 +136,41 @@
 <header class="header">
     <div class="header-title">
         <div class="profile-pic">
-            <amp-img alt="{{ $member->name }}"
-                     src="{{ $member->profile_pic }}"
+            <amp-img alt="乃木坂46"
+                     src="{{ $logo }}"
                      class="contain"
-                    layout="fill">
+                     layout="fill">
             </amp-img>
         </div>
         <div class="meta">
-        <div class="author-name">{{ $member->name }}</div>
+            <div class="author-name">乃木坂46</div>
+            <div class="title">Member Blog</div>
+        </div>
+    </div>
+</header>
+@foreach($posts as $post)
+<article>
+    <div class="content">
+    <div class="profile-pic">
+        <amp-img alt="{{ $post->name }}"
+                 src="{{ $post->profile_pic }}"
+                 class="contain"
+                 layout="fill">
+        </amp-img>
+    </div>
+    <div class="meta">
+        <div class="author-name">{{ $post->name }}</div>
         <div class="post-date">
             {{ $post->posted_at }}
         </div>
         <div class="title">
             {{ $post->title }}
         </div>
-        </div>
     </div>
-</header>
-<article><div class="content">{!! $post->content !!}</div></article>
-<footer>
-    @if($post->prev)
-        <a href="{!! url("/amp/nogizaka46/".$post->member_id."/".$post->prev) !!}" class="prev">PREV</a>
-    @endif
-
-    @if($post->next)
-        <a href="{!! url("/amp/nogizaka46/".$post->member_id."/".$post->next) !!}" class="next">NEXT</a>
-    @endif
-</footer>
+    <div>{!! $post->content !!}</div>
+        <a href="{!! $post->inner_url !!}" class="readmore">阅读全文</a>
+    </div>
+</article>
+@endforeach
 </body>
 </html>

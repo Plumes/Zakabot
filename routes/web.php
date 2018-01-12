@@ -11,9 +11,10 @@
 |
 */
 
-$app->get('/', function () use ($app) {
-    return $app->version();
-});
+//$app->get('/', function () use ($app) {
+//    return $app->version();
+//});
+$app->get('/', ['uses'=>'MainController@post_list']);
 
 $app->post('/{bot_id}/hook', function ($bot_id) use ($app) {
     if($bot_id=="372178022") {

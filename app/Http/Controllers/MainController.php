@@ -27,6 +27,45 @@ class MainController extends Controller
         //
     }
 
+    public function post_list() {
+        $posts = DB::table('posts')
+            ->join('idol_members','posts.member_id','=','idol_members.id')
+            ->select('posts.*','idol_members.name','idol_members.profile_pic')
+            ->where('idol_members.group_id',2)
+            ->orderBy('posts.id','desc')
+            ->limit(10)
+            ->get();
+        foreach ($posts as $post) {
+            $desc = trim(strip_tags($post->content));
+            $post->content = mb_substr($desc,0,140)."......";
+            $post->inner_url = url("/amp/nogizaka46/".$post->member_id."/".$post->id);
+            if(empty($post->profile_pic)) {
+                $post->profile_pic = url("/images/nogizaka46_logo.jpg");
+            }
+        }
+        $schema_meta = [
+            "@context"=>"http://schema.org",
+            "@type"=>"BlogPosting",
+            "mainEntityOfPage"=>"http://blog.nogizaka46.com/",
+            "headline"=>"乃木坂46 公式ブログ",
+            "datePublished"=>date('c', time()),
+            'author'=>["@type"=>"Person",'name'=>"乃木坂46"],
+            "publisher"=>[
+                "@type"=>"Organization",
+                'name'=>"乃木坂46",
+                "legalName"=>"Nogizaka46",
+                "logo"=>[
+                    "@type"=>"ImageObject",
+                    "url"=>url("/images/nogizaka46_logo.jpg"),
+                    "width"=>400,
+                    "height"=>400
+                ],
+                "description"=>"乃木坂46 公式ブログ"
+            ]
+        ];
+        return view('ngzk_index',['posts'=>$posts,'logo'=>url("/images/nogizaka46_logo.jpg"),"schema"=>$schema_meta]);
+    }
+
     //
     public function crawl() {
         $result = DB::table("idol_fans_relation")
@@ -102,6 +141,7 @@ class MainController extends Controller
         }
         $post->prev = DB::table('posts')->where('member_id', $post->member_id)->where('id','<',$post->id)->orderBy('id','desc')->value('id');
         $post->next = DB::table('posts')->where('member_id', $post->member_id)->where('id','>',$post->id)->orderBy('id','asc')->value('id');
+        $desc = trim(strip_tags($post->content));
 
         $schema_meta = [
             "@context"=>"http://schema.org",
@@ -119,7 +159,8 @@ class MainController extends Controller
                     "url"=>url("/images/nogizaka46_logo.jpg"),
                     "width"=>400,
                     "height"=>400
-                ]
+                ],
+                "description"=>mb_substr($desc,0,40)
             ]
         ];
         return view('amp_post',['post'=>$post,'member'=>$member,"schema"=>$schema_meta]);
