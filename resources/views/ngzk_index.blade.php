@@ -1,6 +1,7 @@
 @extends('amp_layout')
 @section('head')
     <meta charset="utf-8">
+    <script async custom-element="amp-analytics" src="https://cdn.ampproject.org/v0/amp-analytics-0.1.js"></script>
     <script async src="https://cdn.ampproject.org/v0.js"></script>
     <title>乃木坂46 公式ブログ</title>
     <link rel="canonical" href="http://blog.nogizaka46.com/">
