@@ -42,6 +42,12 @@ class MainController extends Controller
             if(empty($post->profile_pic)) {
                 $post->profile_pic = url("/images/nogizaka46_logo.jpg");
             }
+
+            $UTC = new \DateTimeZone("UTC");
+            $newTZ = new \DateTimeZone("Asia/Tokyo");
+            $date = new \DateTime( $post->posted_at, $UTC );
+            $date->setTimezone( $newTZ );
+            $post->posted_at = $date->format('Y-m-d H:i:s');
         }
         $schema_meta = [
             "@context"=>"http://schema.org",
@@ -142,6 +148,12 @@ class MainController extends Controller
         $post->prev = DB::table('posts')->where('member_id', $post->member_id)->where('id','<',$post->id)->orderBy('id','desc')->value('id');
         $post->next = DB::table('posts')->where('member_id', $post->member_id)->where('id','>',$post->id)->orderBy('id','asc')->value('id');
         $desc = trim(strip_tags($post->content));
+
+        $UTC = new \DateTimeZone("UTC");
+        $newTZ = new \DateTimeZone("Asia/Tokyo");
+        $date = new \DateTime( $post->posted_at, $UTC );
+        $date->setTimezone( $newTZ );
+        $post->posted_at = $date->format('Y-m-d H:i:s');
 
         $schema_meta = [
             "@context"=>"http://schema.org",
