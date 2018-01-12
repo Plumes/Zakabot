@@ -7,6 +7,9 @@
     <link rel="canonical" href="{!! $post->url !!}">
     <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
     <style amp-custom>
+        body {
+            background-color: #7e1083;;
+        }
         .header {
             width: 100%;
             background-color: #fff;
@@ -64,8 +67,7 @@
             height: 300px;
         }
         article {
-            padding: 105px 15px 30px 15px;
-            background: #7e1083;
+            padding: 30px 15px 30px 15px;
         }
         article div.content {
             padding: 20px 10px;
@@ -78,7 +80,6 @@
             padding: 0 15px 20px 15px;
             display: inline-block;
             width: 100%;
-            background-color: #7e1083;;
             box-sizing: border-box;
         }
         footer a {
