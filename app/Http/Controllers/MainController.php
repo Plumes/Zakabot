@@ -36,7 +36,7 @@ class MainController extends Controller
             ->limit(10)
             ->get();
         foreach ($posts as $post) {
-            $post->title = mb_substr($post->title, 0, 15);
+            $post->title = mb_substr($post->title, 0, 14);
             $desc = trim(strip_tags($post->content));
             $post->content = mb_substr($desc,0,140)."......";
             $post->inner_url = url("/amp/nogizaka46/".$post->member_id."/".$post->id);
