@@ -32,7 +32,7 @@ class MainController extends Controller
             ->join('idol_members','posts.member_id','=','idol_members.id')
             ->select('posts.*','idol_members.name','idol_members.profile_pic')
             ->where('idol_members.group_id',2)
-            ->orderBy('posts.id','desc')
+            ->orderBy('posts.posted_at','desc')
             ->limit(10)
             ->get();
         foreach ($posts as $post) {
