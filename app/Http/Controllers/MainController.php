@@ -127,8 +127,8 @@ class MainController extends Controller
         $post->content = str_replace("</content>", '', $post->content);
         $post->content = str_replace('<div> </div>', '<p></p>', $post->content);
         $post->content = preg_replace("/<div>(<font size=\"1\">)+<br\/>(<\/font>)+<\/div>/", "<p></p>", $post->content);
-        $post->content = str_replace('<font size="1">', '<div class="font-size-1">', $post->content);
-        $post->content = str_replace('</font>', '</div>', $post->content);
+        //$post->content = str_replace('<font size="1">', '<div class="font-size-1">', $post->content);
+        //$post->content = str_replace('</font>', '</div>', $post->content);
         $replace_pattern = '<a$1><div class="fixed-height-container"><amp-img class="contain" layout="fill" src="$2"></amp-img></div></a>';
         $post->content = preg_replace("/<a(.*)><img.+src=\"([\w,:,\/,\.]+)\".*\/><\/a>/U", $replace_pattern, $post->content);
         if(mb_strlen($post->title)>20) {
