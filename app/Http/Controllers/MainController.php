@@ -95,7 +95,7 @@ class MainController extends Controller
             $post->abbr_title = $post->title;
         }
         if(empty($member->profile_pic)) {
-            $member->profile_pic = url("/images/nogizaka46_logo.png");
+            $member->profile_pic = url("/images/nogizaka46_logo.jpg");
         }
         return view('amp_post',['post'=>$post,'member'=>$member]);
     }
