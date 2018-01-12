@@ -77,9 +77,12 @@ class MainController extends Controller
         }
     }
 
-    public function generateAMP($member_id, $post_id) {
-        $post = DB::table('posts')->where('id',8316)->first();
-        $member = DB::table('idol_members')->where('id', $post->member_id)->first();
+    public function generateAMP_NGZK($member_id, $post_id) {
+        $member = DB::table('idol_members')->where('id', $member_id)->where('group_id', 2)->first();
+        if(empty($member)) return response('404');
+        $post = DB::table('posts')->where('id',$post_id)->where('member_id',$member->id)->first();
+        if(empty($post) || $post->member_id != $member_id) return response('404');
+
         $post->content = preg_replace("/<content.*>/U",'', $post->content);
         $post->content = str_replace("]]&gt;", '', $post->content);
         $post->content = str_replace("</content>", '', $post->content);
@@ -87,8 +90,8 @@ class MainController extends Controller
         $post->content = preg_replace("/<div>(<font size=\"1\">)+<br\/>(<\/font>)+<\/div>/", "<p></p>", $post->content);
         $post->content = str_replace('<font size="1">', '<div class="font-size-1">', $post->content);
         $post->content = str_replace('</font>', '</div>', $post->content);
-        $replace_pattarn = '<a$1><div class="fixed-height-container"><amp-img class="contain" layout="fill" src="$2"></amp-img></div></a>';
-        $post->content = preg_replace("/<a(.*)><img.+src=\"([\w,:,\/,\.]+)\".*\/><\/a>/U", $replace_pattarn, $post->content);
+        $replace_pattern = '<a$1><div class="fixed-height-container"><amp-img class="contain" layout="fill" src="$2"></amp-img></div></a>';
+        $post->content = preg_replace("/<a(.*)><img.+src=\"([\w,:,\/,\.]+)\".*\/><\/a>/U", $replace_pattern, $post->content);
         if(mb_strlen($post->title)>20) {
             $post->abbr_title = (mb_substr($post->title,0,20))."...";
         } else {
@@ -97,7 +100,29 @@ class MainController extends Controller
         if(empty($member->profile_pic)) {
             $member->profile_pic = url("/images/nogizaka46_logo.jpg");
         }
-        return view('amp_post',['post'=>$post,'member'=>$member]);
+        $post->prev = DB::table('posts')->where('member_id', $post->member_id)->where('id','<',$post->id)->orderBy('id','desc')->value('id');
+        $post->next = DB::table('posts')->where('member_id', $post->member_id)->where('id','>',$post->id)->orderBy('id','asc')->value('id');
+
+        $schema_meta = [
+            "@context"=>"http://schema.org",
+            "@type"=>"BlogPosting",
+            "mainEntityOfPage"=>$post->url,
+            "headline"=>"乃木坂46 ".$member->name." ".$post->title,
+            "datePublished"=>str_replace(' ','T',$post->posted_at)."+09:00",
+            'author'=>["@type"=>"Person",'name'=>$member->name],
+            "publisher"=>[
+                "@type"=>"Organization",
+                'name'=>"乃木坂46",
+                "legalName"=>"Nogizaka46",
+                "logo"=>[
+                    "@type"=>"ImageObject",
+                    "url"=>url("/images/nogizaka46_logo.jpg"),
+                    "width"=>400,
+                    "height"=>400
+                ]
+            ]
+        ];
+        return view('amp_post',['post'=>$post,'member'=>$member,"schema"=>$schema_meta]);
     }
 
 }

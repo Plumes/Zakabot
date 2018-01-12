@@ -13,7 +13,7 @@
             height: 80px;
             padding: 0 25px;
             background-color: #fff;
-            box-shadow: 0 0 40px 0 rgba(0,0,0,0.1);
+            box-shadow: 0 0 40px 0 rgba(0,0,0,0.5);
             font-size: 14px;
         }
         p {
@@ -64,15 +64,41 @@
             height: 300px;
         }
         article {
-            padding: 105px 15px 0;
+            padding: 105px 15px 30px 15px;
             background: #7e1083;
         }
         article div.content {
-            padding: 0 10px;
-            background-color: #f8f8f8;;
+            padding: 20px 10px;
+            background-color: #f8f8f8;
+            box-shadow: 0 5px 40px 0 rgba(0,0,0,0.5);
+            border-radius: 2px;
+            box-sizing: border-box;
+        }
+        footer {
+            padding: 0 15px 20px 15px;
+            display: inline-block;
+            width: 100%;
+            background-color: #7e1083;;
+            box-sizing: border-box;
+        }
+        footer a {
+            padding: 10px 20px;
+            font-size: 14px;
+            background-color: #ffffff;
+            text-decoration: none;
+            box-shadow: 0 5px 40px 0 rgba(0,0,0,0.5);
+            border-radius: 2px;
+        }
+        footer .prev {
+            align-self: flex-start;
+        }
+        footer .next {
+            align-self: flex-end;
+            float: right;
         }
     </style>
     <style amp-boilerplate>body{-webkit-animation:-amp-start 8s steps(1,end) 0s 1 normal both;-moz-animation:-amp-start 8s steps(1,end) 0s 1 normal both;-ms-animation:-amp-start 8s steps(1,end) 0s 1 normal both;animation:-amp-start 8s steps(1,end) 0s 1 normal both}@-webkit-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-moz-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-ms-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-o-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}</style><noscript><style amp-boilerplate>body{-webkit-animation:none;-moz-animation:none;-ms-animation:none;animation:none}</style></noscript>
+    <script type="application/ld+json"><?php echo json_encode($schema,JSON_UNESCAPED_SLASHES)?></script>
 </head>
 <body>
 <header class="header">
@@ -96,5 +122,14 @@
     </div>
 </header>
 <article><div class="content">{!! $post->content !!}</div></article>
+<footer>
+    @if($post->prev)
+        <a href="{!! url("/amp/nogizaka46/".$post->member_id."/".$post->prev) !!}" class="prev">PREV</a>
+    @endif
+
+    @if($post->next)
+        <a href="{!! url("/amp/nogizaka46/".$post->member_id."/".$post->next) !!}" class="next">NEXT</a>
+    @endif
+</footer>
 </body>
 </html>
