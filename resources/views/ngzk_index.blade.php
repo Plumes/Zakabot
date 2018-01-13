@@ -14,6 +14,7 @@
             background-color: #fff;
             box-shadow: 0 0 40px 0 rgba(0,0,0,0.5);
             font-size: 14px;
+            box-sizing: border-box;
         }
         .header .logo {
             margin-top: 10px;
