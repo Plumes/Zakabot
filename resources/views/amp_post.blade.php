@@ -89,10 +89,9 @@
             border-radius: 2px;
         }
         footer .prev {
-            align-self: flex-start;
+            float: left;
         }
         footer .next {
-            align-self: flex-end;
             float: right;
         }
     </style>
