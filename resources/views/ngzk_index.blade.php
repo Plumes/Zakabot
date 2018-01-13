@@ -1,11 +1,8 @@
 @extends('amp_layout')
+
+@section('title','乃木坂46 公式ブログ')
+@section('canonical','http://blog.nogizaka46.com/')
 @section('head')
-    <meta charset="utf-8">
-    <script async custom-element="amp-analytics" src="https://cdn.ampproject.org/v0/amp-analytics-0.1.js"></script>
-    <script async src="https://cdn.ampproject.org/v0.js"></script>
-    <title>乃木坂46 公式ブログ</title>
-    <link rel="canonical" href="http://blog.nogizaka46.com/">
-    <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
     <style amp-custom>
         body {
             background: #7e1083;
@@ -18,16 +15,7 @@
             box-shadow: 0 0 40px 0 rgba(0,0,0,0.5);
             font-size: 14px;
         }
-        p {
-            height: 1em;
-            line-height: 1em;
-            margin: 0;
-        }
-        div.font-size-1 {
-            font-size: 14px;
-            display: inline;
-        }
-        div.profile-pic {
+        .header .logo {
             margin-top: 10px;
             width: 60px;
             height: 60px;
@@ -37,41 +25,33 @@
             overflow: hidden;
             display: inline-block;
         }
-        div.meta {
+        .header .site-meta {
             display: inline-block;
             height: 60px;
             margin-top: 10px;
             vertical-align: top;
             margin-left: 15px;
         }
-        .author-name, .post-date {
-            display: inline-block;
+        .header .site-name {
             font-size: 1.5em;
             color: #333333;
             height: 30px;
             line-height: 30px;
         }
-        .title {
+        .header .site-desc {
             font-size: 16px;
             color: #777777;
             height: 30px;
             line-height: 30px;
         }
-        div.content .meta,div.content .profile-pic {
-            margin: 0 0 20px 0;
+        p {
+            height: 1em;
+            line-height: 1em;
+            margin: 0;
         }
-        div.content .author-name  {
+        div.font-size-1 {
             font-size: 14px;
-            color: #777777;
-        }
-        div.content .post-date {
-            font-size: 14px;
-            color: #777777;
-            margin-left: 10px;
-        }
-        div.content .title {
-            font-size: 18px;
-            color: #333333;
+            display: inline;
         }
         amp-img.contain img {
             object-fit: contain;
@@ -82,15 +62,60 @@
             height: 300px;
         }
         article {
-            padding: 30px 15px 30px 15px;
-
-        }
-        article div.content {
+            display: block;
+            margin: 30px 15px 30px 15px;
             padding: 20px 10px;
             background-color: #f8f8f8;
             box-shadow: 0 5px 40px 0 rgba(0,0,0,0.5);
             border-radius: 2px;
             box-sizing: border-box;
+            position: relative;
+        }
+        article .article-head {
+            position: relative;
+            height: 60px;
+            margin-bottom: 20px;
+        }
+        article .profile-pic {
+            width: 60px;
+            height: 60px;
+            position: relative;
+            background-color: rgb(241,241,243);
+            border-radius: 30px;
+            overflow: hidden;
+            float: left;
+        }
+        article .meta {
+            width: 100%;
+            padding-left: 70px;
+            box-sizing: border-box;
+        }
+        article .meta .author-name {
+            height: 30px;
+            line-height: 30px;
+            font-size: 14px;
+            color: #777777;
+            display: inline-block;
+        }
+        article .meta .post-date {
+            height: 30px;
+            line-height: 30px;
+            display: inline-block;
+            font-size: 12px;
+            color: #777777;
+            margin-left: 10px;
+        }
+        article .meta .title {
+            height: 30px;
+            line-height: 30px;
+            font-size: 18px;
+            color: #333333;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow:ellipsis;
+        }
+        article div.content {
+
         }
         footer {
             padding: 0 15px 20px 15px;
@@ -129,29 +154,27 @@
             color: #7e1083;
         }
     </style>
-    <style amp-boilerplate>body{-webkit-animation:-amp-start 8s steps(1,end) 0s 1 normal both;-moz-animation:-amp-start 8s steps(1,end) 0s 1 normal both;-ms-animation:-amp-start 8s steps(1,end) 0s 1 normal both;animation:-amp-start 8s steps(1,end) 0s 1 normal both}@-webkit-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-moz-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-ms-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-o-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}</style><noscript><style amp-boilerplate>body{-webkit-animation:none;-moz-animation:none;-ms-animation:none;animation:none}</style></noscript>
-    <script type="application/ld+json"><?php echo json_encode($schema,JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)?></script>
 @endsection
 
 @section('body')
 <header class="header">
     <div class="header-title">
-        <div class="profile-pic">
+        <div class="logo">
             <amp-img alt="乃木坂46"
                      src="{{ $logo }}"
                      class="contain"
                      layout="fill">
             </amp-img>
         </div>
-        <div class="meta">
-            <div class="author-name">乃木坂46</div>
-            <div class="title">Member Blog</div>
+        <div class="site-meta">
+            <div class="site-name">乃木坂46</div>
+            <div class="site-desc">Member Blog</div>
         </div>
     </div>
 </header>
 @foreach($posts as $post)
 <article>
-    <div class="content">
+    <div class="article-head">
     <div class="profile-pic">
         <amp-img alt="{{ $post->name }}"
                  src="{{ $post->profile_pic }}"
@@ -168,9 +191,9 @@
             {{ $post->title }}
         </div>
     </div>
-    <div>{!! $post->content !!}</div>
-        <a href="{!! $post->inner_url !!}" class="readmore">阅读全文</a>
     </div>
+    <div class="content">{!! $post->content !!}</div>
+    <a href="{!! $post->inner_url !!}" class="readmore">阅读全文</a>
 </article>
 @endforeach
 @endsection
