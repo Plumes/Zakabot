@@ -15,22 +15,18 @@ use Exception;
 class getNGZKLatestPostJob extends Job
 {
     private $article_html;
-    public function __construct($article_html=false)
+    public function __construct($article_html)
     {
         //
         $this->article_html = $article_html;
     }
 
     public function handle() {
-        $article_html = $this->article_html;
-        if(empty($article_html)) return;
-        $dom = new \DOMDocument();
-        libxml_use_internal_errors(true);
-        $dom->loadXML($article_html);
-        $xpath = new \DOMXPath($dom);
-        $title = $xpath->query("title")->item(0)->nodeValue;
-        $post_url = $xpath->query('link/@href')->item(0)->nodeValue;
-        $published_at = $xpath->query('published')->item(0)->nodeValue;
+        $article = $this->article_html;
+        if(!($article instanceof \SimpleXMLElement)) return;
+        $title = (string)$article->title;
+        $post_url =$article->link->attributes()->href;
+        $published_at = (string)$article->published;
         $published_at = \DateTime::createFromFormat('Y-m-d\TH:i:s\Z', $published_at);
         $published_at->setTimeZone(new \DateTimeZone('Asia/Tokyo'));
         //防止执行重复的任务
@@ -55,8 +51,7 @@ class getNGZKLatestPostJob extends Job
         }
         if(empty($member)) return;
 
-        $content = $xpath->query('content')->item(0);
-        $content_html = $dom->saveXML($content);
+        $content_html = (string)$article->content;
 
         $cover_image = false;
         $cover_image_hash = null;

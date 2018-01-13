@@ -65,26 +65,20 @@ class Kernel extends ConsoleKernel
         $schedule->call(function () {
             $blog_url = "http://blog.nogizaka46.com/atom.xml";
             $html = file_get_contents($blog_url);
-            $dom = new \DOMDocument();
-            libxml_use_internal_errors(true);
-            $dom->loadHTML($html);
-            $xpath = new \DOMXPath($dom);
+            $xml = simplexml_load_string($html);
 
-            $article_list = $xpath->query("//entry");
-            if(empty($article_list)) return;
+            if(count($xml->entry)<1) return;
             $i=0;
-            foreach ($article_list as $article) {
-                $title = $xpath->query("title", $article)->item(0)->nodeValue;
-                $post_url = $xpath->query('link/@href', $article)->item(0)->nodeValue;
+            foreach ($xml->entry as $article) {
+                $post_url = $article->link->attributes()->href;
+                if(empty($post_url)) continue;
                 $post_url_hash = md5($post_url);
 
                 $post = DB::table('posts')->where('url_hash', $post_url_hash)->first();
                 if(!empty($post)) continue;
                 $delay = $i++*5+1;
-                $article_html = $dom->saveXML($article);
                 Log::info("new post:".$post_url." appointment at ".Date("m-d H:i:s", time()+$delay));
-                dispatch( (new getNGZKLatestPostJob($article_html))->delay($delay) );
-
+                dispatch( (new getNGZKLatestPostJob($article))->delay($delay) );
             }
         })->cron('5,15,25,35,45,55 * * * * *');
     }
