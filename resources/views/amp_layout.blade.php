@@ -5,7 +5,7 @@
     <script async custom-element="amp-analytics" src="https://cdn.ampproject.org/v0/amp-analytics-0.1.js"></script>
     <script async src="https://cdn.ampproject.org/v0.js"></script>
     <title>@yield('title')</title>
-    <link rel='icon' href='nogizaka46.ico' type='image/x-icon' />
+    <link rel='icon' href='/nogizaka46.ico' type='image/x-icon' />
     <link rel="canonical" href="@yield('canonical')">
     <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1,maximum-scale=1.0, user-scalable=no">
     @yield('head')
