@@ -50,11 +50,7 @@
         .title {
             font-size: 1.5rem;
             color: #333333;
-            height: 30px;
             line-height: 30px;
-            overflow: hidden;
-            white-space: nowrap;
-            text-overflow:ellipsis;
         }
         amp-img.contain img {
             object-fit: contain;
