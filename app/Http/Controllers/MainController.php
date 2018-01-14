@@ -172,6 +172,10 @@ class MainController extends Controller
         $post->content = preg_replace("/<a(.*)><img.+src=\"([\w,:,\/,\.]+)\".*><\/a>/U", $replace_pattern, $post->content);
         $replace_pattern = '<div class="fixed-height-container"><amp-img class="contain" layout="fill" src="$1"></amp-img></div>';
         $post->content = preg_replace("/<img.+src=\"([\w,:,\/,\.]+)\".*>/U", $replace_pattern, $post->content);
+
+        $post->content = preg_replace("/x-apple-data.+=\".+\"/U",'', $post->content);
+        $post->content = preg_replace("/x-apple-data-detectors:\/\/\w+/U",'', $post->content);
+        $post->content = preg_replace("/<blockquote.+(type=\".+\")/U",'', $post->content);
         if(mb_strlen($post->title)>20) {
             $post->abbr_title = (mb_substr($post->title,0,20))."...";
         } else {
