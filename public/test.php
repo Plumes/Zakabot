@@ -13,7 +13,7 @@ while (true) {
     try {
         echo $client->upload('./images/nogizaka46_logo.jpg', $username, $password);
         break;
-    } catch (Consatan\Weibo\ImageUploader\Exception\RequirePinException $e) {
+    } catch (Consatan\Weibo\ImageUploader\Exception\BadResponseException $e) {
         echo '验证码图片位置：' . $e->getMessage() . PHP_EOL .  '输入验证码以继续：';
         if (!$client->login($username, $password, stream_get_line(STDIN, 1024, PHP_EOL))) {
             echo '登入失败';
