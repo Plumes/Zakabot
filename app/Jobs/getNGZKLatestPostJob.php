@@ -78,7 +78,6 @@ class getNGZKLatestPostJob extends Job
         $cover_image = false;
         $cover_image_hash = null;
         preg_match_all('/<a href="http:\/\/dcimg\.awalker\.jp\/img1\.php\?id=(\w+)"[^>]*><img.+src="([\w,:,\/,\.]+)"[^>]><\/a>/U', $content_html, $matches);
-        Log::info(json_encode($matches));
         foreach ($matches[0] as $k=>$v) {
             if($k==0) {
                 dispatch(new uploadImageJob($post_id, $matches[1][$k], $matches[2][$k]));
