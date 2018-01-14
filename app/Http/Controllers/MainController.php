@@ -198,7 +198,7 @@ class MainController extends Controller
             $post->abbr_title = $post->title;
         }
         if(empty($member->profile_pic)) {
-            $member->profile_pic = url("/images/nogizaka46_logo.jpg");
+            $member->profile_pic = url("/images/nogizaka46_logo.png");
         }
         $post->prev = DB::table('posts')->where('member_id', $post->member_id)->where('id','<',$post->id)->orderBy('id','desc')->value('id');
         $post->next = DB::table('posts')->where('member_id', $post->member_id)->where('id','>',$post->id)->orderBy('id','asc')->value('id');
