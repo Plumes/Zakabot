@@ -7,6 +7,7 @@
  */
 namespace App\Jobs;
 
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Libraries\HTTPUtil;
@@ -53,41 +54,6 @@ class getNGZKLatestPostJob extends Job
 
         $content_html = (string)$article->content;
 
-        $cover_image = false;
-        $cover_image_hash = null;
-        preg_match('/<a href="http:\/\/dcimg\.awalker\.jp\/img1\.php\?id=(\w+)".*<img/sU', $content_html, $matches);
-        if(isset($matches[1])) {
-            $img_url = "http://dcimg.awalker.jp/img1.php?id=".$matches[1];
-            $url_hash = md5($img_url);
-            HTTPUtil::get($img_url, $url_hash);
-            $img_url = "http://dcimg.awalker.jp/img2.php?sec_key=".$matches[1];
-            $img_file = HTTPUtil::get($img_url, $url_hash);
-            if($img_file!=false) {
-                file_put_contents("/tmp/".$url_hash.".jpg", $img_file);
-                $result = HTTPUtil::post("https://api.telegram.org/bot309781356:AAFl5KmawS2-x56V8jv-c4t43pjnPFRLPMs/sendPhoto", [
-                    'chat_id'=>"307558399",
-                    'photo'=>curl_file_create("/tmp/".$url_hash.".jpg")
-                ]);
-                if($result!==false) {
-                    $result = json_decode($result, true);
-                    if(is_array($result['result']['photo'])) {
-                        $size = count($result['result']['photo']);
-                        $cover_image = $result['result']['photo'][$size-1]['file_id'];
-                        $cover_image_hash = null;
-                    }
-                }
-            }
-            if(file_exists("/tmp/".$url_hash)) unlink("/tmp/".$url_hash);
-            if(file_exists("/tmp/".$url_hash.".jpg")) unlink("/tmp/".$url_hash.".jpg");
-
-        }
-        if($cover_image===false) {
-            preg_match('/<img.+src="(\S+)"/U', $content_html, $matches);
-            if(isset($matches[1])) {
-                $cover_image = $matches[1];
-            }
-        }
-
         DB::table('idol_members')->where('id', $member->id)->update([
             'last_post_at'=>$published_at->format('Y-m-d H:i:s'),
             'updated_at'=>date('Y-m-d H:i:s')
@@ -100,13 +66,42 @@ class getNGZKLatestPostJob extends Job
                 'url' => $post_url,
                 'url_hash' => $post_url_hash,
                 'content' => trim($content_html),
-                'cover_image' => $cover_image!==false?$cover_image:'',
-                'cover_image_hash' => $cover_image_hash,
+                //'cover_image' => $cover_image!==false?$cover_image:'',
+                //'cover_image_hash' => $cover_image_hash,
                 'posted_at' => $published_at->format('Y-m-d H:i:s'),
                 'created_at'=>date('Y-m-d H:i:s'),
                 'updated_at'=>date('Y-m-d H:i:s')
             ]
         );
+
+        $cover_image = false;
+        $cover_image_hash = null;
+        preg_match_all('/<a href="http:\/\/dcimg\.awalker\.jp\/img1\.php\?id=(\w+)".*><img.+src="([\w,:,\/,\.]+)".*><\/a>/U', $content_html, $matches);
+        foreach ($matches[0] as $k=>$v) {
+            if($k==0) {
+                dispatch(new uploadImageJob($post_id, $matches[1][$k], $matches[2][$k]));
+                $uploaded_cover_image = DB::table('post_images')->where('post_id',$post_id)->first();
+                if(!empty($uploaded_cover_image)) {
+                    $cover_image = $uploaded_cover_image->url;
+                }
+            } else {
+                dispatch((new uploadImageJob($post_id, $matches[1][$k], $matches[2][$k]))->delay($k+1));
+            }
+        }
+        if($cover_image===false) {
+            preg_match('/<img.+src="(\S+)"/U', $content_html, $matches);
+            if(isset($matches[1])) {
+                $cover_image = $matches[1];
+            }
+        }
+
+        if($cover_image!==false) {
+            DB::table('posts')->where('id',$post_id)->update([
+                'cover_image' => $cover_image,
+                'cover_image_hash' => null,
+            ]);
+        }
+
         HTTPUtil::submitMIP(['https://zakabot.zhh.me/amp/nogizaka46/'.$member->id."/".$post_id]);
         $fans_id_list = DB::table('idol_fans_relation')->where('member_id', $member->id)->pluck('fan_id');
         $fan_list = DB::table('fans')->whereIn('id', $fans_id_list)->get();

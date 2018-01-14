@@ -10,10 +10,12 @@ namespace App\Http\Controllers;
 
 use App\Jobs\getKYZKLatestPostJob;
 use App\Jobs\sendUpdateMessageJob;
+use App\Jobs\uploadImageJob;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use App\Libraries\HTTPUtil;
 use phpDocumentor\Reflection\Types\Null_;
+use Consatan;
 
 class MainController extends Controller
 {
@@ -92,34 +94,56 @@ class MainController extends Controller
         }
     }
     public function test() {
-        $content = file_get_contents("http://blog.nogizaka46.com/third/2017/12/042080.php");
-        preg_match('/<a href="http:\/\/dcimg\.awalker\.jp\/img1\.php\?id=(\w+)".*<img/sU', $content, $matches);
-        if(isset($matches[1])) {
-            $img_url = "http://dcimg.awalker.jp/img1.php?id=".$matches[1];
-            $url_hash = md5($img_url);
-            HTTPUtil::get($img_url, $url_hash);
-            $img_url = "http://dcimg.awalker.jp/img2.php?sec_key=".$matches[1];
-            $img_file = HTTPUtil::get($img_url, $url_hash);
-            if($img_file!=false) {
-                file_put_contents("/tmp/".$url_hash.".jpg", $img_file);
-                $result = HTTPUtil::post("https://api.telegram.org/bot309781356:AAFl5KmawS2-x56V8jv-c4t43pjnPFRLPMs/sendPhoto", [
-                    'chat_id'=>"307558399",
-                    'photo'=>curl_file_create("/tmp/".$url_hash.".jpg")
-                ]);
-                if($result!==false) {
-                    $result = json_decode($result, true);
-                    if(is_array($result['result']['photo'])) {
-                        $size = count($result['result']['photo']);
-                        $cover_image = $result['result']['photo'][$size-1]['file_id'];
-                        $cover_image_hash = null;
-                    }
-                }
-            }
-            if(file_exists("/tmp/".$url_hash)) unlink("/tmp/".$url_hash);
-            if(file_exists("/tmp/".$url_hash.".jpg")) unlink("/tmp/".$url_hash.".jpg");
-            dispatch( (new sendUpdateMessageJob("309781356", "307558399", "test", $cover_image))->delay(1) );
+        $blog_url = "http://blog.nogizaka46.com/atom.xml";
+        $html = file_get_contents($blog_url);
+        $xml = simplexml_load_string($html);
 
+        if(count($xml->entry)<1) return;
+        $i=0;
+        foreach ($xml->entry as $article) {
+            $post_url = (string)$article->link->attributes()->href;
+            if(empty($post_url)) continue;
+            $post_url_hash = md5($post_url);
+            $content = (string)$article->content;
+            preg_match_all('/<a href="http:\/\/dcimg\.awalker\.jp\/img1\.php\?id=(\w+)".*><img.+src="([\w,:,\/,\.]+)".*><\/a>/U', $content, $matches);
+            foreach ($matches[0] as $k=>$v) {
+                dispatch(new uploadImageJob(1,$matches[1][$k], $matches[2][$k]));
+            }
+            $res = DB::table('post_images')->count();
+            var_dump($res);
+            exit;
+
+//            $post = DB::table('posts')->where('url_hash', $post_url_hash)->first();
+//            if(!empty($post)) continue;
+//            $delay = $i++*5+1;
+//            Log::info("new post:".$post_url." appointment at ".Date("m-d H:i:s", time()+$delay));
+//            dispatch( (new getNGZKLatestPostJob($article->asXML()))->delay($delay) );
         }
+//        $content = file_get_contents("http://blog.nogizaka46.com/third/2018/01/042849.php");
+//        preg_match('/<a href="http:\/\/dcimg\.awalker\.jp\/img1\.php\?id=(\w+)".*<img/sU', $content, $matches);
+//        if(isset($matches[1])) {
+//            $img_url = "http://dcimg.awalker.jp/img1.php?id=".$matches[1];
+//            $url_hash = md5($img_url);
+//            HTTPUtil::get($img_url, $url_hash);
+//            $img_url = "http://dcimg.awalker.jp/img2.php?sec_key=".$matches[1];
+//            $img_file = HTTPUtil::get($img_url, $url_hash);
+//            if($img_file!=false) {
+//                file_put_contents("/tmp/".$url_hash.".jpg", $img_file);
+//                $weibo = new Consatan\Weibo\ImageUploader\Client();
+//
+//// 默认返回的是 https 协议的图床 URL，调用该方法返回的是 http 协议的图床 URL
+//// $weibo->useHttps(false);
+//
+//// 上传示例图片
+//                $url = $weibo->upload("/tmp/".$url_hash.".jpg", 'prctrash@126.com', '0okmnji9');
+//
+//// 输出新浪图床 URL
+//                echo $url . PHP_EOL;
+//            }
+//            if(file_exists("/tmp/".$url_hash)) unlink("/tmp/".$url_hash);
+//            if(file_exists("/tmp/".$url_hash.".jpg")) unlink("/tmp/".$url_hash.".jpg");
+//
+//        }
     }
 
     public function generateAMP_NGZK($member_id, $post_id) {
@@ -135,13 +159,18 @@ class MainController extends Controller
         $post->content = preg_replace("/<div>(<font size=\"1\">)+<br\/>(<\/font>)+<\/div>/", "<p></p>", $post->content);
         //$post->content = str_replace('<font size="1">', '<div class="font-size-1">', $post->content);
         //$post->content = str_replace('</font>', '</div>', $post->content);
-        $replace_pattern = '<a$1><div class="fixed-height-container"><amp-img class="contain" layout="fill" src="$2"></amp-img></div></a>';
-        $post->content = preg_replace("/<a(.*)><img.+src=\"([\w,:,\/,\.]+)\".*\/><\/a>/U", $replace_pattern, $post->content);
-        if(mb_strlen($post->title)>20) {
-            $post->abbr_title = (mb_substr($post->title,0,20))."...";
-        } else {
-            $post->abbr_title = $post->title;
+
+        $uploaded_images = DB::table('post_images')->where('post_id', $post_id)->get();
+        foreach ($uploaded_images as $img) {
+            $replace_pattern = "<amp-img src=\"$img->url\" width=\"$img->width\" height=\"$img->height\" layout=\"responsive\"></amp-img>";
+            $img->original_url = str_replace(['/','.'],['\/','\.'], $img->original_url);
+            $search_pattern = "/<a.*><img.+src=\"$img->original_url\".*><\/a>/U";
+            $post->content = preg_replace($search_pattern,$replace_pattern,$post->content);
         }
+
+        $replace_pattern = '<a$1><div class="fixed-height-container"><amp-img class="contain" layout="fill" src="$2"></amp-img></div></a>';
+        $post->content = preg_replace("/<a(.*)><img.+src=\"([\w,:,\/,\.]+)\".*><\/a>/U", $replace_pattern, $post->content);
+
         if(empty($member->profile_pic)) {
             $member->profile_pic = url("/images/nogizaka46_logo.jpg");
         }
