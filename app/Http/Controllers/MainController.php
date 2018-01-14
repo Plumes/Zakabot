@@ -123,7 +123,15 @@ class MainController extends Controller
             $content = (string)$article->content;
             preg_match_all('/<a href="http:\/\/dcimg\.awalker\.jp\/img1\.php\?id=(\w+)".*><img.+src="([\w,:,\/,\.]+)".*><\/a>/U', $content, $matches);
             foreach ($matches[0] as $k=>$v) {
-                dispatch(new uploadImageJob(1,$matches[1][$k], $matches[2][$k]));
+                if($k==0) {
+                    dispatch(new uploadImageJob(8396, $matches[1][$k], $matches[2][$k]));
+                    $uploaded_cover_image = DB::table('post_images')->where('post_id',8396)->first();
+                    if(!empty($uploaded_cover_image)) {
+                        $cover_image = $uploaded_cover_image->url;
+                    }
+                } else {
+                    dispatch((new uploadImageJob(8396, $matches[1][$k], $matches[2][$k]))->delay($k+1));
+                }
             }
             $res = DB::table('post_images')->count();
             var_dump($res);
