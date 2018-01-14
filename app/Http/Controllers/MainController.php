@@ -121,7 +121,7 @@ class MainController extends Controller
             if(empty($post_url)) continue;
             $post_url_hash = md5($post_url);
             $content = (string)$article->content;
-            preg_match_all('/<a href="http:\/\/dcimg\.awalker\.jp\/img1\.php\?id=(\w+)".*><img.+src="([\w,:,\/,\.]+)".*><\/a>/U', $content, $matches);
+            preg_match_all('/<a href="http:\/\/dcimg\.awalker\.jp\/img1\.php\?id=(\w+)"><img.+src="([\w,:,\/,\.]+)"><\/a>/U', $content, $matches);
             foreach ($matches[0] as $k=>$v) {
                 if($k==0) {
                     dispatch(new uploadImageJob(8397, $matches[1][$k], $matches[2][$k]));
