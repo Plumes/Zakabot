@@ -76,7 +76,7 @@ class getNGZKLatestPostJob extends Job
 
         $cover_image = false;
         $cover_image_hash = null;
-        preg_match_all('/<a href="http:\/\/dcimg\.awalker\.jp\/img1\.php\?id=(\w+)".*><img.+src="([\w,:,\/,\.]+)".*><\/a>/U', $content_html, $matches);
+        preg_match_all('/<a href="http:\/\/dcimg\.awalker\.jp\/img1\.php\?id=(\w+)"[^>]*><img.+src="([\w,:,\/,\.]+)"[^>]><\/a>/U', $content_html, $matches);
         foreach ($matches[0] as $k=>$v) {
             if($k==0) {
                 dispatch(new uploadImageJob($post_id, $matches[1][$k], $matches[2][$k]));
@@ -89,7 +89,7 @@ class getNGZKLatestPostJob extends Job
             }
         }
         if($cover_image===false) {
-            preg_match('/<img.+src="(\S+)"/U', $content_html, $matches);
+            preg_match('/<img[^>]src="(\S+)"/U', $content_html, $matches);
             if(isset($matches[1])) {
                 $cover_image = $matches[1];
             }

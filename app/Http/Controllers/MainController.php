@@ -164,7 +164,7 @@ class MainController extends Controller
         foreach ($uploaded_images as $img) {
             $replace_pattern = "<amp-img src=\"$img->url\" width=\"$img->width\" height=\"$img->height\" layout=\"responsive\"></amp-img>";
             $img->original_url = str_replace(['/','.'],['\/','\.'], $img->original_url);
-            $search_pattern = "/<a.*><img.+src=\"$img->original_url\".*><\/a>/U";
+            $search_pattern = "/<a href=.*><img.+src=\"$img->original_url\".*><\/a>/U";
             $post->content = preg_replace($search_pattern,$replace_pattern,$post->content);
         }
 
@@ -173,9 +173,9 @@ class MainController extends Controller
         $replace_pattern = '<div class="fixed-height-container"><amp-img class="contain" layout="fill" src="$1"></amp-img></div>';
         $post->content = preg_replace("/<img.+src=\"([\w,:,\/,\.]+)\".*>/U", $replace_pattern, $post->content);
 
+        $post->content = preg_replace("/href=\"(x-apple-data-detectors:\/\/\w+)\"/U",'href=""', $post->content);
         $post->content = preg_replace("/x-apple-data.+=\".+\"/U",'', $post->content);
-        $post->content = preg_replace("/x-apple-data-detectors:\/\/\w+/U",'', $post->content);
-        $post->content = preg_replace("/<blockquote.+(type=\".+\")/U",'', $post->content);
+        $post->content = preg_replace("/<blockquote[^>]+type=[^>]+>/U",'<blockquote>', $post->content);
         if(mb_strlen($post->title)>20) {
             $post->abbr_title = (mb_substr($post->title,0,20))."...";
         } else {
