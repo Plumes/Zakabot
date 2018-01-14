@@ -23,7 +23,8 @@ class getNGZKLatestPostJob extends Job
 
     public function handle() {
         $article = $this->article_html;
-        if(!($article instanceof \SimpleXMLElement)) return;
+        if(empty($article)) return;
+        //if(!($article instanceof \SimpleXMLElement)) return;
         $title = (string)$article->title;
         $post_url =(string)$article->link->attributes()->href;
         $published_at = (string)$article->published;
