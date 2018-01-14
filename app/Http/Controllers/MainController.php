@@ -180,12 +180,12 @@ class MainController extends Controller
         foreach ($uploaded_images as $img) {
             $replace_pattern = "<amp-img src=\"$img->url\" width=\"$img->width\" height=\"$img->height\" layout=\"responsive\"></amp-img>";
             $img->original_url = str_replace(['/','.'],['\/','\.'], $img->original_url);
-            $search_pattern = "/<a href=.*><img.+src=\"$img->original_url\".*><\/a>/U";
+            $search_pattern = "/<a href=[^>]+><img[^>]+src=\"$img->original_url\"[^>]*><\/a>/U";
             $post->content = preg_replace($search_pattern,$replace_pattern,$post->content);
         }
 
         $replace_pattern = '<div class="fixed-height-container"><a$1><amp-img class="contain" layout="fill" src="$2"></amp-img></a></div>';
-        $post->content = preg_replace("/<a(.*)><img.+src=\"([\w,:,\/,\.]+)\".*><\/a>/U", $replace_pattern, $post->content);
+        $post->content = preg_replace("/<a([^>]+)><img.+src=\"([\w,:,\/,\.]+)\".*><\/a>/U", $replace_pattern, $post->content);
         $replace_pattern = '<div class="fixed-height-container"><amp-img class="contain" layout="fill" src="$1"></amp-img></div>';
         $post->content = preg_replace("/<img.+src=\"([\w,:,\/,\.]+)\".*>/U", $replace_pattern, $post->content);
 
