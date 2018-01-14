@@ -25,7 +25,7 @@ class getNGZKLatestPostJob extends Job
         $article = $this->article_html;
         if(!($article instanceof \SimpleXMLElement)) return;
         $title = (string)$article->title;
-        $post_url =$article->link->attributes()->href;
+        $post_url =(string)$article->link->attributes()->href;
         $published_at = (string)$article->published;
         $published_at = \DateTime::createFromFormat('Y-m-d\TH:i:s\Z', $published_at);
         $published_at->setTimeZone(new \DateTimeZone('Asia/Tokyo'));

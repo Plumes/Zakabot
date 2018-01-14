@@ -70,7 +70,7 @@ class Kernel extends ConsoleKernel
             if(count($xml->entry)<1) return;
             $i=0;
             foreach ($xml->entry as $article) {
-                $post_url = $article->link->attributes()->href;
+                $post_url = (string)$article->link->attributes()->href;
                 if(empty($post_url)) continue;
                 $post_url_hash = md5($post_url);
 
