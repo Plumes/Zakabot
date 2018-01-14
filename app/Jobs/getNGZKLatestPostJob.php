@@ -23,7 +23,6 @@ class getNGZKLatestPostJob extends Job
 
     public function handle() {
         $article = simplexml_load_string($this->article_html);
-        //if(empty($article)) return;
         if(!($article instanceof \SimpleXMLElement)) return;
         $title = (string)$article->title;
         $post_url =(string)$article->link->attributes()->href;
@@ -95,7 +94,7 @@ class getNGZKLatestPostJob extends Job
         ]);
 
 
-        DB::table('posts')->insert([
+        $post_id = DB::table('posts')->insertGetId([
                 'member_id' => $member->id,
                 'title' => $title,
                 'url' => $post_url,
@@ -108,6 +107,7 @@ class getNGZKLatestPostJob extends Job
                 'updated_at'=>date('Y-m-d H:i:s')
             ]
         );
+        HTTPUtil::submitMIP(['https://zakabot.zhh.me/amp/nogizaka46/'.$member->id."/".$post_id]);
         $fans_id_list = DB::table('idol_fans_relation')->where('member_id', $member->id)->pluck('fan_id');
         $fan_list = DB::table('fans')->whereIn('id', $fans_id_list)->get();
         if($cover_image===false) {

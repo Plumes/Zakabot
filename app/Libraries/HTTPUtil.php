@@ -65,4 +65,19 @@ class HTTPUtil
             return false;
         }
     }
+
+    static public function submitMIP($url_array) {
+        $api = 'http://data.zz.baidu.com/urls?site=zakabot.zhh.me&token=SWwpysKMoRLH18ly&type=amp';
+        $ch = curl_init();
+        $options =  array(
+            CURLOPT_URL => $api,
+            CURLOPT_POST => true,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POSTFIELDS => implode("\n", $url_array),
+            CURLOPT_HTTPHEADER => array('Content-Type: text/plain'),
+        );
+        curl_setopt_array($ch, $options);
+        $result = curl_exec($ch);
+        echo $result;
+    }
 }
