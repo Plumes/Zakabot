@@ -78,7 +78,7 @@ class Kernel extends ConsoleKernel
                 if(!empty($post)) continue;
                 $delay = $i++*5+1;
                 Log::info("new post:".$post_url." appointment at ".Date("m-d H:i:s", time()+$delay));
-                dispatch( (new getNGZKLatestPostJob($article))->delay($delay) );
+                dispatch( (new getNGZKLatestPostJob($article->asXML()))->delay($delay) );
             }
         })->cron('5,15,25,35,45,55 * * * * *');
     }
