@@ -170,7 +170,11 @@ class MainController extends Controller
 
         $replace_pattern = '<a$1><div class="fixed-height-container"><amp-img class="contain" layout="fill" src="$2"></amp-img></div></a>';
         $post->content = preg_replace("/<a(.*)><img.+src=\"([\w,:,\/,\.]+)\".*><\/a>/U", $replace_pattern, $post->content);
-
+        if(mb_strlen($post->title)>20) {
+            $post->abbr_title = (mb_substr($post->title,0,20))."...";
+        } else {
+            $post->abbr_title = $post->title;
+        }
         if(empty($member->profile_pic)) {
             $member->profile_pic = url("/images/nogizaka46_logo.jpg");
         }
