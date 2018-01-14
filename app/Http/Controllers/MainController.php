@@ -43,9 +43,9 @@ class MainController extends Controller
                 "legalName"=>"Nogizaka46",
                 "logo"=>[
                     "@type"=>"ImageObject",
-                    "url"=>url("/images/nogizaka46_logo.png"),
+                    "url"=>url("/images/nogizaka46_amp_logo.png"),
                     "width"=>600,
-                    "height"=>600
+                    "height"=>60
                 ],
                 "description"=>"乃木坂46 公式ブログ"
             ],
@@ -224,9 +224,9 @@ class MainController extends Controller
                 "legalName"=>"Nogizaka46",
                 "logo"=>[
                     "@type"=>"ImageObject",
-                    "url"=>url("/images/nogizaka46_logo.png"),
+                    "url"=>url("/images/nogizaka46_amp_logo.png"),
                     "width"=>600,
-                    "height"=>600
+                    "height"=>60
                 ],
                 "description"=>"乃木坂46 公式ブログ Official Blog"
             ]
