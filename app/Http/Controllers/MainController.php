@@ -30,6 +30,27 @@ class MainController extends Controller
     }
 
     public function post_list() {
+        $schema_meta = [
+            "@context"=>"http://schema.org",
+            "@type"=>"BlogPosting",
+            "mainEntityOfPage"=>"http://blog.nogizaka46.com/",
+            "headline"=>"乃木坂46 公式ブログ",
+            "datePublished"=>'',
+            'author'=>["@type"=>"Person",'name'=>"乃木坂46"],
+            "publisher"=>[
+                "@type"=>"Organization",
+                'name'=>"乃木坂46",
+                "legalName"=>"Nogizaka46",
+                "logo"=>[
+                    "@type"=>"ImageObject",
+                    "url"=>url("/images/nogizaka46_logo.png"),
+                    "width"=>600,
+                    "height"=>600
+                ],
+                "description"=>"乃木坂46 公式ブログ"
+            ],
+            "dateModified"=>'',
+        ];
         $posts = DB::table('posts')
             ->join('idol_members','posts.member_id','=','idol_members.id')
             ->select('posts.*','idol_members.name','idol_members.profile_pic')
@@ -50,27 +71,22 @@ class MainController extends Controller
             $date = new \DateTime( $post->posted_at, $UTC );
             $date->setTimezone( $newTZ );
             $post->posted_at = $date->format('Y-m-d H:i:s');
+            if(empty($schema_meta['datePublished'])) {
+                $schema_meta['datePublished'] = $schema_meta['dateModified'] = $date->format('Y-m-dTH:i:s+09:00');
+            }
+            if(!isset($schema_meta['image'])) {
+                $img = DB::table('post_images')->where('post_id',$post->id)->first();
+                if(!empty($img)) {
+                    $schema_meta['image'] = [
+                        "@type"=>"ImageObject",
+                        "url"=>$img->url,
+                        "width"=>$img->width,
+                        "height"=>$img->height
+                    ];
+                }
+
+            }
         }
-        $schema_meta = [
-            "@context"=>"http://schema.org",
-            "@type"=>"BlogPosting",
-            "mainEntityOfPage"=>"http://blog.nogizaka46.com/",
-            "headline"=>"乃木坂46 公式ブログ",
-            "datePublished"=>date('c', time()),
-            'author'=>["@type"=>"Person",'name'=>"乃木坂46"],
-            "publisher"=>[
-                "@type"=>"Organization",
-                'name'=>"乃木坂46",
-                "legalName"=>"Nogizaka46",
-                "logo"=>[
-                    "@type"=>"ImageObject",
-                    "url"=>url("/images/nogizaka46_logo.jpg"),
-                    "width"=>400,
-                    "height"=>400
-                ],
-                "description"=>"乃木坂46 公式ブログ"
-            ]
-        ];
         return view('ngzk_index',['posts'=>$posts,'logo'=>url("/images/nogizaka46_logo.jpg"),"schema"=>$schema_meta]);
     }
 
@@ -198,8 +214,9 @@ class MainController extends Controller
             "@context"=>"http://schema.org",
             "@type"=>"BlogPosting",
             "mainEntityOfPage"=>url("/amp/nogizaka46/".$member->id."/".$post->id),
-            "headline"=>"乃木坂46 ".$member->name." ".$post->title,
+            "headline"=>"乃木坂46 ".$member->name." ".$post->title." ".mb_substr($desc,0,30),
             "datePublished"=>str_replace(' ','T',$post->posted_at)."+09:00",
+            "dateModified"=>str_replace(' ','T',$post->posted_at)."+09:00",
             'author'=>["@type"=>"Person",'name'=>$member->name],
             "publisher"=>[
                 "@type"=>"Organization",
@@ -207,13 +224,22 @@ class MainController extends Controller
                 "legalName"=>"Nogizaka46",
                 "logo"=>[
                     "@type"=>"ImageObject",
-                    "url"=>url("/images/nogizaka46_logo.jpg"),
-                    "width"=>400,
-                    "height"=>400
+                    "url"=>url("/images/nogizaka46_logo.png"),
+                    "width"=>600,
+                    "height"=>600
                 ],
-                "description"=>mb_substr($desc,0,40)
+                "description"=>"乃木坂46 公式ブログ Official Blog"
             ]
         ];
+        $img = DB::table('post_images')->where('post_id',$post->id)->first();
+        if(!empty($img)) {
+            $schema_meta['image'] = [
+                "@type"=>"ImageObject",
+                "url"=>$img->url,
+                "width"=>$img->width,
+                "height"=>$img->height
+            ];
+        }
         return view('amp_post',['post'=>$post,'member'=>$member,"schema"=>$schema_meta]);
     }
 
