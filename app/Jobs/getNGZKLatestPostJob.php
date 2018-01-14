@@ -81,6 +81,7 @@ class getNGZKLatestPostJob extends Job
         foreach ($matches[0] as $k=>$v) {
             if($k==0) {
                 dispatch(new uploadImageJob($post_id, $matches[1][$k], $matches[2][$k]));
+                sleep(15);
                 $uploaded_cover_image = DB::table('post_images')->where('post_id',$post_id)->first();
                 if(!empty($uploaded_cover_image)) {
                     $cover_image = $uploaded_cover_image->url;
