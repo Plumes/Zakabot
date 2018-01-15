@@ -85,8 +85,37 @@ class getNGZKLatestPostJob extends Job
 
         preg_match_all('/<a href="http:\/\/dcimg\.awalker\.jp\/img1\.php\?id=(\w+)"><img.+src="([\w,:,\/,\.]+)"><\/a>/U', $content_html, $matches);
         if(count($matches[0])>0) {
-            dispatch((new uploadImageJob($post_id, $matches[1], $matches[2]))->delay(1));
-            return;
+            try {
+                $img_url = "http://dcimg.awalker.jp/img1.php?id=" . $matches[1][0];
+                $url_hash = md5($img_url);
+                HTTPUtil::get($img_url, $url_hash);
+                $img_url = "http://dcimg.awalker.jp/img2.php?sec_key=" . $matches[1][0];
+                $img_file = HTTPUtil::get($img_url, $url_hash);
+                if ($img_file != false) {
+                    file_put_contents("/tmp/" . $url_hash . ".jpg", $img_file);
+                    $result = HTTPUtil::post("https://api.telegram.org/bot309781356:AAFl5KmawS2-x56V8jv-c4t43pjnPFRLPMs/sendPhoto", [
+                        'chat_id' => "307558399",
+                        'photo' => curl_file_create("/tmp/" . $url_hash . ".jpg")
+                    ]);
+                    if ($result !== false) {
+                        $result = json_decode($result, true);
+                        if (is_array($result['result']['photo'])) {
+                            $size = count($result['result']['photo']);
+                            $cover_image = $result['result']['photo'][$size - 1]['file_id'];
+                            $cover_image_hash = null;
+                        }
+                    }
+                }
+                if (file_exists("/tmp/" . $url_hash)) unlink("/tmp/" . $url_hash);
+                if (file_exists("/tmp/" . $url_hash . ".jpg")) unlink("/tmp/" . $url_hash . ".jpg");
+            } catch (\Exception $exception) {
+                Log::info($exception->getMessage());
+            }
+
+            foreach ($matches[1] as $k=>$cdn_id) {
+                dispatch((new uploadImageJob($post_id, $cdn_id, $matches[2][$k]))->delay(1));
+            }
+
         }
 
 
