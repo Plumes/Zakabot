@@ -122,9 +122,9 @@ class getNGZKLatestPostJob extends Job
         $fans_id_list = DB::table('idol_fans_relation')->where('member_id', $member->id)->pluck('fan_id');
         $fan_list = DB::table('fans')->whereIn('id', $fans_id_list)->get();
         if($cover_image===false) {
-            $reply_content = $member->name." 发表了新的日记 <b>".$title.'</b><br /><a href="'.$post_url.'">查看详情</a>';
+            $reply_content = $member->name." 发表了新的日记 <b>".mb_substr($title,0,70).'</b><br /><a href="'.$post_url.'">查看详情</a>';
         } else {
-            $reply_content = $member->name." 发表了新的日记\n".$title."\n链接: ".$post_url;
+            $reply_content = $member->name." 发表了新的日记\n".mb_substr($title,0,70)."\n链接: ".$post_url;
         }
         Log::info("notify about ".$member->name." new post:".$post_url);
         $i=0;

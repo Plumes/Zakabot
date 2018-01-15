@@ -73,9 +73,8 @@ class TelegramAPI {
             'parse_mode' => 'HTML'
         ];
         list($return_code, $return_content) = $this->http_post_data($api_url, json_encode($post_data));
-        Log::info($return_code);
-        Log::info($return_content);
-        return "success";
+        if($return_code=="200") return true;
+        return $return_content;
     }
 
     public function sendPhoto($chat_id, $reply_content, $cover_image) {
@@ -86,8 +85,7 @@ class TelegramAPI {
             'caption' => $reply_content
         ];
         list($return_code, $return_content) = $this->http_post_data($api_url, json_encode($post_data));
-        Log::info($return_code);
-        Log::info($return_content);
-        return "success";
+        if($return_code=="200") return true;
+        return $return_content;
     }
 }
