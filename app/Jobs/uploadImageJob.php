@@ -78,7 +78,7 @@ class uploadImageJob extends Job
         Log::info("notify about ".$member->name." new post:".$post->url);
         $i=0;
         foreach ($fan_list as $fan) {
-            dispatch( (new sendUpdateMessageJob("309781356", $fan->chat_id, $reply_content, $cover_image))->delay($i++/10) );
+            dispatch( new sendUpdateMessageJob("309781356", $fan->chat_id, $reply_content, $cover_image) );
         }
     }
 
