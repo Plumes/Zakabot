@@ -9,6 +9,7 @@
 namespace App\Http\Controllers;
 
 use App\Jobs\getKYZKLatestPostJob;
+use App\Jobs\getNGZKLatestPostJob;
 use App\Jobs\sendUpdateMessageJob;
 use App\Jobs\uploadImageJob;
 use Carbon\Carbon;
@@ -112,29 +113,12 @@ class MainController extends Controller
     public function test() {
         $blog_url = "http://blog.nogizaka46.com/atom.xml";
         $html = file_get_contents($blog_url);
-        $xml = simplexml_load_string($html);
+        $xml = simplexml_load_string($html, 'SimpleXMLElement', LIBXML_PARSEHUGE );
 
         if(count($xml->entry)<1) return;
         $i=0;
         foreach ($xml->entry as $article) {
-            $post_url = (string)$article->link->attributes()->href;
-            if(empty($post_url)) continue;
-            $post_url_hash = md5($post_url);
-            $content = (string)$article->content;
-            preg_match_all('/<a href="http:\/\/dcimg\.awalker\.jp\/img1\.php\?id=(\w+)"><img.+src="([\w,:,\/,\.]+)"><\/a>/U', $content, $matches);
-            foreach ($matches[0] as $k=>$v) {
-                if($k==0) {
-                    dispatch(new uploadImageJob(8397, $matches[1][$k], $matches[2][$k]));
-                    $uploaded_cover_image = DB::table('post_images')->where('post_id',8397)->first();
-                    if(!empty($uploaded_cover_image)) {
-                        $cover_image = $uploaded_cover_image->url;
-                    }
-                } else {
-                    dispatch((new uploadImageJob(8397, $matches[1][$k], $matches[2][$k]))->delay($k+1));
-                }
-            }
-            $res = DB::table('post_images')->count();
-            var_dump($res);
+            $this->dispatch(new getNGZKLatestPostJob($article->asXML()));
             exit;
 
 //            $post = DB::table('posts')->where('url_hash', $post_url_hash)->first();

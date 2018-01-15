@@ -7,15 +7,14 @@
  */
 namespace App\Jobs;
 
-use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Libraries\HTTPUtil;
-use App\Jobs\uploadImageJob;
 use Exception;
 
 class getNGZKLatestPostJob extends Job
 {
+    public $timeout = 150;
     private $article_html;
     public function __construct($article_html)
     {
@@ -60,6 +59,13 @@ class getNGZKLatestPostJob extends Job
             'updated_at'=>date('Y-m-d H:i:s')
         ]);
 
+        $cover_image = false;
+        $cover_image_hash = null;
+        preg_match('/<img[^>]src="(\S+)"/U', $content_html, $matches);
+        if(isset($matches[1])) {
+            $cover_image = $matches[1];
+        }
+
 
         $post_id = DB::table('posts')->insertGetId([
                 'member_id' => $member->id,
@@ -67,44 +73,23 @@ class getNGZKLatestPostJob extends Job
                 'url' => $post_url,
                 'url_hash' => $post_url_hash,
                 'content' => trim($content_html),
-                //'cover_image' => $cover_image!==false?$cover_image:'',
-                //'cover_image_hash' => $cover_image_hash,
+                'cover_image' => $cover_image!==false?$cover_image:'',
+                'cover_image_hash' => $cover_image_hash,
                 'posted_at' => $published_at->format('Y-m-d H:i:s'),
                 'created_at'=>date('Y-m-d H:i:s'),
                 'updated_at'=>date('Y-m-d H:i:s')
             ]
         );
 
-        $cover_image = false;
-        $cover_image_hash = null;
-        preg_match_all('/<a href="http:\/\/dcimg\.awalker\.jp\/img1\.php\?id=(\w+)"><img.+src="([\w,:,\/,\.]+)"><\/a>/U', $content_html, $matches);
-        foreach ($matches[0] as $k=>$v) {
-            if($k==0) {
-                dispatch(new uploadImageJob($post_id, $matches[1][$k], $matches[2][$k]));
-                sleep(15);
-                $uploaded_cover_image = DB::table('post_images')->where('post_id',$post_id)->first();
-                if(!empty($uploaded_cover_image)) {
-                    $cover_image = $uploaded_cover_image->url;
-                }
-            } else {
-                dispatch((new uploadImageJob($post_id, $matches[1][$k], $matches[2][$k]))->delay($k+1));
-            }
-        }
-        if($cover_image===false) {
-            preg_match('/<img[^>]src="(\S+)"/U', $content_html, $matches);
-            if(isset($matches[1])) {
-                $cover_image = $matches[1];
-            }
-        }
-
-        if($cover_image!==false) {
-            DB::table('posts')->where('id',$post_id)->update([
-                'cover_image' => $cover_image,
-                'cover_image_hash' => null,
-            ]);
-        }
-
         HTTPUtil::submitMIP(['https://zakabot.zhh.me/amp/nogizaka46/'.$member->id."/".$post_id]);
+
+        preg_match_all('/<a href="http:\/\/dcimg\.awalker\.jp\/img1\.php\?id=(\w+)"><img.+src="([\w,:,\/,\.]+)"><\/a>/U', $content_html, $matches);
+        if(count($matches[0])>0) {
+            dispatch((new uploadImageJob($post_id, $matches[1], $matches[2]))->delay(1));
+            return;
+        }
+
+
         $fans_id_list = DB::table('idol_fans_relation')->where('member_id', $member->id)->pluck('fan_id');
         $fan_list = DB::table('fans')->whereIn('id', $fans_id_list)->get();
         if($cover_image===false) {

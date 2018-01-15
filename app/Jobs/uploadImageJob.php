@@ -11,6 +11,7 @@ namespace App\Jobs;
 use App\Libraries\HTTPUtil;
 use Illuminate\Support\Facades\DB;
 use Consatan;
+use Illuminate\Support\Facades\Log;
 
 class uploadImageJob extends Job
 {
@@ -20,14 +21,17 @@ class uploadImageJob extends Job
      * @return void
      */
     private $post_id;
-    private $cdn_id;
-    private $original_url;
-    public function __construct($post_id,$cdn_id,$original_url)
+    private $cdn_id_list;
+    private $original_url_list;
+    private $post;
+    public $timeout = 120;
+    public function __construct($post_id,$cdn_id_list,$original_url_list)
     {
         //
         $this->post_id = $post_id;
-        $this->cdn_id = $cdn_id;
-        $this->original_url = $original_url;
+        $this->cdn_id_list = $cdn_id_list;
+        $this->original_url_list = $original_url_list;
+        $this->post = DB::table('posts')->where('id',$this->post_id)->first();
     }
 
     /**
@@ -38,43 +42,44 @@ class uploadImageJob extends Job
     public function handle()
     {
         //
-        $post = DB::table('posts')->where('id',$this->post_id)->first();
-        if(empty($post)) return;
-
-        $img_url = "http://dcimg.awalker.jp/img1.php?id=".$this->cdn_id;
-        $url_hash = md5($img_url);
-        HTTPUtil::get($img_url, $url_hash);
-        $img_url = "http://dcimg.awalker.jp/img2.php?sec_key=".$this->cdn_id;
-        $img_file = HTTPUtil::get($img_url, $url_hash);
-        if($img_file!=false) {
-            file_put_contents("/tmp/".$url_hash.".jpg", $img_file);
-            $file_size = filesize("/tmp/".$url_hash.".jpg");
-            $size = getimagesize("/tmp/".$url_hash.".jpg");
-            $weibo = new Consatan\Weibo\ImageUploader\Client();
-
-            // 默认返回的是 https 协议的图床 URL，调用该方法返回的是 http 协议的图床 URL
-            // $weibo->useHttps(false);
-
-            // 上传示例图片
-            $url = $weibo->upload("/tmp/".$url_hash.".jpg", 'prctrash@126.com', '0okmnji9');
-
-            // 输出新浪图床 URL
-            if(!empty($url)) {
-                DB::table('post_images')->insert([
-                    'post_id'=>$post->id,
-                    'original_url'=>$this->original_url,
-                    'original_url_hash'=>md5($this->original_url),
-                    'url'=>$url,
-                    'file_size'=>intval($file_size),
-                    'width'=>intval($size[0]),
-                    'height'=>intval($size[1]),
-                    'created_at'=>date('Y-m-d H:i:s'),
-                    'updated_at'=>date('Y-m-d H:i:s')
-                ]);
+        if(empty($this->post)) return;
+        $post = $this->post;
+        $member = DB::table('idol_members')->where('id',$post->member_id)->first();
+        if(empty($member)) return;
+        $cover_image = false;
+        foreach ($this->cdn_id_list as $k=>$cdn_id) {
+            if($cover_image===false) {
+                try {
+                    $img = HTTPUtil::uploadNGZKImage($post->id, $cdn_id, $this->original_url_list[$k]);
+                    if(!empty($img)) {
+                        $cover_image = $img['url'];
+                        DB::table('posts')->where('id',$post->id)->update([
+                            'cover_image' => $cover_image,
+                            'cover_image_hash' => null,
+                        ]);
+                    }
+                } catch (\Exception $e) {
+                    Log::info($e->getMessage());
+                }
+            } else {
+                dispatch((new uploadOtherImages($post->id, $cdn_id, $this->original_url_list[$k]))->delay(1));
             }
+
         }
-        if(file_exists("/tmp/".$url_hash)) unlink("/tmp/".$url_hash);
-        if(file_exists("/tmp/".$url_hash.".jpg")) unlink("/tmp/".$url_hash.".jpg");
+
+        if($cover_image!==false) {
+            $reply_content = $member->name." 发表了新的日记\n".$post->title."\n链接: ".$post->url;
+        } else {
+            $reply_content = $member->name." 发表了新的日记 <b>".$post->title.'</b><br /><a href="'.$post->url.'">查看详情</a>';
+        }
+
+        $fans_id_list = DB::table('idol_fans_relation')->where('member_id', $member->id)->pluck('fan_id');
+        $fan_list = DB::table('fans')->whereIn('id', $fans_id_list)->get();
+        Log::info("notify about ".$member->name." new post:".$post->url);
+        $i=0;
+        foreach ($fan_list as $fan) {
+            dispatch( (new sendUpdateMessageJob("309781356", $fan->chat_id, $reply_content, $cover_image))->delay($i++/10) );
+        }
     }
 
     public function failed(\Exception $exception)
