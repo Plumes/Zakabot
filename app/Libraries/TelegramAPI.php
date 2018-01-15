@@ -73,7 +73,8 @@ class TelegramAPI {
             'parse_mode' => 'HTML'
         ];
         list($return_code, $return_content) = $this->http_post_data($api_url, json_encode($post_data));
-        Log::info($reply_content);
+        Log::info($return_code);
+        Log::info($return_content);
         return "success";
     }
 
@@ -85,7 +86,8 @@ class TelegramAPI {
             'caption' => $reply_content
         ];
         list($return_code, $return_content) = $this->http_post_data($api_url, json_encode($post_data));
-        Log::info($reply_content);
+        Log::info($return_code);
+        Log::info($return_content);
         return "success";
     }
 }
