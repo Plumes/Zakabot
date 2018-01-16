@@ -223,6 +223,7 @@ class MainController extends Controller
                 "description"=>"乃木坂46 公式ブログ Official Blog"
             ]
         ];
+
         $img = DB::table('post_images')->where('post_id',$post->id)->first();
         if(!empty($img)) {
             $schema_meta['image'] = [
@@ -230,6 +231,13 @@ class MainController extends Controller
                 "url"=>$img->url,
                 "width"=>$img->width,
                 "height"=>$img->height
+            ];
+        } elseif (!empty($post->cover_image) && substr($post->cover_image, 0, 4)=="http") {
+            $schema_meta['image'] = [
+                "@type"=>"ImageObject",
+                "url"=>$post->cover_image,
+                "width"=>240,
+                "height"=>0
             ];
         }
         return view('amp_post',['post'=>$post,'member'=>$member,"schema"=>$schema_meta]);
