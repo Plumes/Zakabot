@@ -113,7 +113,7 @@ class MainController extends Controller
         }
     }
     public function test() {
-        dispatch(new getNGZKMemberPost(1,201801));
+        dispatch((new getNGZKMemberPost(1,201801))->delay(1));
         echo "start";
     }
 
