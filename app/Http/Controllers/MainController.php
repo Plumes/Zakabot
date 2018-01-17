@@ -10,11 +10,13 @@ namespace App\Http\Controllers;
 
 use App\Jobs\getKYZKLatestPostJob;
 use App\Jobs\getNGZKLatestPostJob;
+use App\Jobs\getNGZKMemberPost;
 use App\Jobs\sendUpdateMessageJob;
 use App\Jobs\uploadImageJob;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use App\Libraries\HTTPUtil;
+use Illuminate\Support\Facades\Log;
 use phpDocumentor\Reflection\Types\Null_;
 use Consatan;
 
@@ -111,57 +113,8 @@ class MainController extends Controller
         }
     }
     public function test() {
-        $member_id = 1;
-        $url = "http://blog.nogizaka46.com/himeka.nakamoto/";
-        $page_number = 1;
-        $next_page = 0;
-        $month = "201211";
-        $page_html = file_get_contents($url."?p=".$page_number."&d=".$month);
-        $page = new \DOMDocument();
-        libxml_use_internal_errors(true);
-        $res = $page->loadHTML($page_html, LIBXML_PARSEHUGE);
-        if(!$res) return;
-        $main_html = $page->getElementById("sheet");
-        $xpath = new \DOMXPath($page);
-        $paginate = $xpath->query("//div[@class='paginate'][1]/a");
-        foreach ($paginate as $v) {
-            $pg_number = intval(trim($v->nodeValue, " \t\n\r\0\x0B\xC2\xA0"));
-            if($page_number < $pg_number) {
-               $next_page = $pg_number;
-               break;
-            }
-        }
-
-        $title_nodes = $xpath->query("//span[@class='entrytitle']/a", $main_html);
-//        foreach ($title_nodes as $v) {
-//            print_r($v->nodeValue);
-//        }
-        $content_nodes = $xpath->query("//div[@class='entrybody']", $main_html);
-//        foreach ($content_nodes as $v) {
-//            print_r($page->saveHTML($v));
-//        }
-
-        $foot_nodes = $xpath->query("//div[@class='entrybottom']", $main_html);
-        if($title_nodes->length != $content_nodes->length || $title_nodes!=$foot_nodes->length) {
-            Log::error("member ".$member_id." ".$month." ".$page_number." invalid data");
-        } else {
-            for($i=$title_nodes->length; --$i>0;) {
-                $title = $title_nodes->item($i)->nodeValue;
-                $url = $title_nodes->item($i)->getAttribute("href");
-                $url_hash = md5($url);
-                $content = $page->saveHTML($content_nodes->item($i));
-                preg_match("/^20\d{2}\/\d{2}\/\d{2} \d{2}:\d{2}/", $foot_nodes->item($i)->textContent, $matches);
-                $published_at = $matches[0];
-                $cover_image = preg_match("/http:\/\/[\w,\.\/]+(jpg|jpeg|png)/U", $content, $matches)
-
-            }
-
-            var_dump($foot_nodes->length);
-            foreach ($foot_nodes as $v) {
-                preg_match("/^20\d{2}\/\d{2}\/\d{2} \d{2}:\d{2}/", $v->textContent, $matches);
-                print_r($matches);
-            }
-        }
+        dispatch(new getNGZKMemberPost(1,201801));
+        echo "start";
     }
 
     public function generateAMP_NGZK($member_id, $post_id) {

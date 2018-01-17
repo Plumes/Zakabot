@@ -42,11 +42,17 @@ class uploadImageJob extends Job
     }
 
     private function uploadNGZKImage($post_id,$cdn_id,$original_url) {
-        $img_url = "http://dcimg.awalker.jp/img1.php?id=".$cdn_id;
-        $url_hash = md5($img_url);
-        HTTPUtil::get($img_url, $url_hash);
-        $img_url = "http://dcimg.awalker.jp/img2.php?sec_key=".$cdn_id;
-        $img_file = HTTPUtil::get($img_url, $url_hash);
+        if(!empty($cdn_id)) {
+            $img_url = "http://dcimg.awalker.jp/img1.php?id=".$cdn_id;
+            $url_hash = md5($img_url);
+            HTTPUtil::get($img_url, $url_hash);
+            $img_url = "http://dcimg.awalker.jp/img2.php?sec_key=".$cdn_id;
+            $img_file = HTTPUtil::get($img_url, $url_hash);
+        } else {
+            $url_hash = md5($original_url);
+            $img_file = HTTPUtil::get($original_url, $url_hash);
+        }
+
         if(empty($img_file)) return null;
 
         file_put_contents("/tmp/".$url_hash.".jpg", $img_file);
@@ -78,7 +84,12 @@ class uploadImageJob extends Job
             'created_at'=>date('Y-m-d H:i:s'),
             'updated_at'=>date('Y-m-d H:i:s')
         ];
-        DB::table('post_images')->insert($img_data);
+        if(empty($cdn_id)) {
+            DB::table('ngzk_post_images')->insert($img_data);
+        } else {
+            DB::table('post_images')->insert($img_data);
+        }
+
         return ['url'=>$url,'file_size'=>$file_size,'size'=>$size,'original_url'=>$original_url];
     }
 

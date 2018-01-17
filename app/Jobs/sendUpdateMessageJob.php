@@ -44,6 +44,10 @@ class sendUpdateMessageJob extends Job
      */
     public function handle()
     {
+        if(env('APP_ENV')=="local") {
+            Log::info("send tg:".$this->reply_content);
+            return;
+        }
         if($this->cover_image ===  false) {
             $result = $this->tg_api->sendHTMLText($this->chat_id, $this->reply_content);
         } else {
