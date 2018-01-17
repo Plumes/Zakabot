@@ -111,47 +111,57 @@ class MainController extends Controller
         }
     }
     public function test() {
-        $blog_url = "http://blog.nogizaka46.com/atom.xml";
-        $html = file_get_contents($blog_url);
-        $xml = simplexml_load_string($html, 'SimpleXMLElement', LIBXML_PARSEHUGE );
-
-        if(count($xml->entry)<1) return;
-        $i=0;
-        foreach ($xml->entry as $article) {
-            $this->dispatch(new getNGZKLatestPostJob($article->asXML()));
-            exit;
-
-//            $post = DB::table('posts')->where('url_hash', $post_url_hash)->first();
-//            if(!empty($post)) continue;
-//            $delay = $i++*5+1;
-//            Log::info("new post:".$post_url." appointment at ".Date("m-d H:i:s", time()+$delay));
-//            dispatch( (new getNGZKLatestPostJob($article->asXML()))->delay($delay) );
+        $member_id = 1;
+        $url = "http://blog.nogizaka46.com/himeka.nakamoto/";
+        $page_number = 1;
+        $next_page = 0;
+        $month = "201211";
+        $page_html = file_get_contents($url."?p=".$page_number."&d=".$month);
+        $page = new \DOMDocument();
+        libxml_use_internal_errors(true);
+        $res = $page->loadHTML($page_html, LIBXML_PARSEHUGE);
+        if(!$res) return;
+        $main_html = $page->getElementById("sheet");
+        $xpath = new \DOMXPath($page);
+        $paginate = $xpath->query("//div[@class='paginate'][1]/a");
+        foreach ($paginate as $v) {
+            $pg_number = intval(trim($v->nodeValue, " \t\n\r\0\x0B\xC2\xA0"));
+            if($page_number < $pg_number) {
+               $next_page = $pg_number;
+               break;
+            }
         }
-//        $content = file_get_contents("http://blog.nogizaka46.com/third/2018/01/042849.php");
-//        preg_match('/<a href="http:\/\/dcimg\.awalker\.jp\/img1\.php\?id=(\w+)".*<img/sU', $content, $matches);
-//        if(isset($matches[1])) {
-//            $img_url = "http://dcimg.awalker.jp/img1.php?id=".$matches[1];
-//            $url_hash = md5($img_url);
-//            HTTPUtil::get($img_url, $url_hash);
-//            $img_url = "http://dcimg.awalker.jp/img2.php?sec_key=".$matches[1];
-//            $img_file = HTTPUtil::get($img_url, $url_hash);
-//            if($img_file!=false) {
-//                file_put_contents("/tmp/".$url_hash.".jpg", $img_file);
-//                $weibo = new Consatan\Weibo\ImageUploader\Client();
-//
-//// 默认返回的是 https 协议的图床 URL，调用该方法返回的是 http 协议的图床 URL
-//// $weibo->useHttps(false);
-//
-//// 上传示例图片
-//                $url = $weibo->upload("/tmp/".$url_hash.".jpg", 'prctrash@126.com', '0okmnji9');
-//
-//// 输出新浪图床 URL
-//                echo $url . PHP_EOL;
-//            }
-//            if(file_exists("/tmp/".$url_hash)) unlink("/tmp/".$url_hash);
-//            if(file_exists("/tmp/".$url_hash.".jpg")) unlink("/tmp/".$url_hash.".jpg");
-//
+
+        $title_nodes = $xpath->query("//span[@class='entrytitle']/a", $main_html);
+//        foreach ($title_nodes as $v) {
+//            print_r($v->nodeValue);
 //        }
+        $content_nodes = $xpath->query("//div[@class='entrybody']", $main_html);
+//        foreach ($content_nodes as $v) {
+//            print_r($page->saveHTML($v));
+//        }
+
+        $foot_nodes = $xpath->query("//div[@class='entrybottom']", $main_html);
+        if($title_nodes->length != $content_nodes->length || $title_nodes!=$foot_nodes->length) {
+            Log::error("member ".$member_id." ".$month." ".$page_number." invalid data");
+        } else {
+            for($i=$title_nodes->length; --$i>0;) {
+                $title = $title_nodes->item($i)->nodeValue;
+                $url = $title_nodes->item($i)->getAttribute("href");
+                $url_hash = md5($url);
+                $content = $page->saveHTML($content_nodes->item($i));
+                preg_match("/^20\d{2}\/\d{2}\/\d{2} \d{2}:\d{2}/", $foot_nodes->item($i)->textContent, $matches);
+                $published_at = $matches[0];
+                $cover_image = preg_match("/http:\/\/[\w,\.\/]+(jpg|jpeg|png)/U", $content, $matches)
+
+            }
+
+            var_dump($foot_nodes->length);
+            foreach ($foot_nodes as $v) {
+                preg_match("/^20\d{2}\/\d{2}\/\d{2} \d{2}:\d{2}/", $v->textContent, $matches);
+                print_r($matches);
+            }
+        }
     }
 
     public function generateAMP_NGZK($member_id, $post_id) {
