@@ -17,21 +17,21 @@ class getNGZKMemberPost extends Job
     private $url;
     private $page_number;
     private $month;
-    private $member_id;
+    private $total_number;
     /**
      * Create a new job instance.
      *
      * @return void
-     * @param int $member_id
-     * @param string $url blog link
-     * @param int page_number 1
+     * @param int $page_number
      * @param int $month 201701
+     * @param int $total_number 1
      */
-    public function __construct(int $page_number,int $month)
+    public function __construct(int $page_number,int $month, int $total_number)
     {
         //
         $this->page_number = $page_number;
         $this->month = $month;
+        $this->total_number = $total_number;
     }
 
     /**
@@ -66,7 +66,7 @@ class getNGZKMemberPost extends Job
         $title_nodes = $xpath->query("//span[@class='entrytitle']/a", $main_html);
         $content_nodes = $xpath->query("//div[@class='entrybody']", $main_html);
         $foot_nodes = $xpath->query("//div[@class='entrybottom']", $main_html);
-
+        $this->total_number += $title_nodes->length;
         if($title_nodes->length != $content_nodes->length || $title_nodes->length!=$foot_nodes->length) {
             Log::error($month." ".$page_number." invalid data");
         } else {
@@ -75,7 +75,22 @@ class getNGZKMemberPost extends Job
                 $url = $title_nodes->item($i)->getAttribute("href");
                 preg_match('/com\/(\S+)\/20/', $url, $matches);
                 $official_id = $matches[1];
-                $member = DB::table('idol_members')->where('official_id',$official_id)->first();
+                $member = null;
+                if($official_id=="third" || $official_id=="kenkyusei") {
+                    $member_names = [];
+                    $member_names['third'] = ['伊藤理々杏','岩本蓮加','梅澤美波','大園桃子','久保史緒里','阪口珠美','佐藤楓','佐藤 楓','中村麗乃','向井葉月','山下美月','吉田綾乃クリスティー','与田祐希'];
+                    $member_names['kenkyusei'] = ['渡辺みり愛','新内眞衣','北野日奈子','堀未央奈','伊藤かりん','寺田蘭世','佐々木琴子','山﨑怜奈','伊藤純奈','鈴木絢音'];
+                    foreach ($member_names[$official_id] as $v) {
+                        if(mb_strpos($title, $v)!==false) {
+                            $v = str_replace(' ', '', $v);
+                            $member = DB::table('idol_members')->where('group_id', 2)->where('name', $v)->first();
+                            break;
+                        }
+                    }
+                } else {
+                    continue;
+                   // $member = DB::table('idol_members')->where('official_id',$official_id)->first();
+                }
                 if(empty($member)) {
                     Log::info("no member:".$url);
                     continue;
@@ -118,9 +133,9 @@ class getNGZKMemberPost extends Job
             $next_month = $month;
         }
 
-        dispatch( new sendUpdateMessageJob("309781356", "307558399", "page:".$this->page_number." month:".$this->month." success", false) );
+        dispatch( new sendUpdateMessageJob("309781356", "307558399", "page:".$this->page_number." month:".$this->month." success ".$this->total_number, false) );
 
-        dispatch((new getNGZKMemberPost($next_page, $next_month))->delay(30));
+        dispatch((new getNGZKMemberPost($next_page, $next_month, $this->total_number))->delay(30));
 
         //echo "success next_page:".$next_page." next month:".$next_month;
     }
