@@ -129,8 +129,11 @@ class getNGZKMemberPost extends Job
                     continue;
                 }
 
-                $dealt++;
                 preg_match_all("/http:\/\/[\w,\.\/]+(jpg|jpeg|png)/U", $content, $matches);
+                $test_images_cnt = DB::table('ngzk_post_images')->where('post_id',$post_id)->count();
+                if($test_images_cnt==count($matches[0])) continue;
+
+                $dealt++;
                 foreach ($matches[0] as $k=>$v) {
                     dispatch((new uploadImageJob($post_id, null, $v))->delay($k/5));
                 }
@@ -143,7 +146,7 @@ class getNGZKMemberPost extends Job
             $next_month = $month;
         }
         dispatch( new sendEditMessage("309781356", "307558399", "21580","page:".$this->page_number." month:".$this->month." success ".$this->total_number." ") );
-        $delay = $dealt>0?$dealt*5:1;
+        $delay = $dealt>0?$dealt*3:1;
         dispatch((new getNGZKMemberPost($next_page, $next_month, $this->total_number))->delay($delay));
 
         //echo "success next_page:".$next_page." next month:".$next_month;
