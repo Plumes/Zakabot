@@ -115,8 +115,8 @@ class MainController extends Controller
         }
     }
     public function test() {
-        //dispatch((new getNGZKMemberPost(42,201704, 0))->delay(1));
-        dispatch( new sendEditMessage("309781356", "307558399", "21253", "test2") );
+        dispatch((new getNGZKMemberPost(1,201801, 0))->delay(1));
+        //dispatch( new sendEditMessage("309781356", "307558399", "21253", "test2") );
     }
 
     public function generateAMP_NGZK($member_id, $post_id) {

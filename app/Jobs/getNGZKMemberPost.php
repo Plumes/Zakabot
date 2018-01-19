@@ -142,8 +142,7 @@ class getNGZKMemberPost extends Job
         } else {
             $next_month = $month;
         }
-
-        dispatch( new sendEditMessage("309781356", "307558399", "21253","page:".$this->page_number." month:".$this->month." success ".$this->total_number) );
+        dispatch( new sendEditMessage("309781356", "307558399", "21253","page:".$this->page_number." month:".$this->month." success ".$this->total_number." ") );
         $delay = $dealt>0?$dealt*5:1;
         dispatch((new getNGZKMemberPost($next_page, $next_month, $this->total_number))->delay($delay));
 
