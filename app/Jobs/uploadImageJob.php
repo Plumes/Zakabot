@@ -11,6 +11,7 @@ namespace App\Jobs;
 use App\Libraries\HTTPUtil;
 use Consatan;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class uploadImageJob extends Job
 {
