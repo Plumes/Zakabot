@@ -14,7 +14,9 @@
 //$app->get('/', function () use ($app) {
 //    return $app->version();
 //});
-$app->get('/', ['uses'=>'MainController@post_list']);
+$app->get('/', function (){
+    return redirect(url('/amp/nogizaka46/'));
+});
 
 $app->post('/{bot_id}/hook', function ($bot_id) use ($app) {
     if($bot_id=="372178022") {
@@ -90,4 +92,5 @@ $app->post('/{bot_id}/hook', function ($bot_id) use ($app) {
 $app->get('crawl', ['uses'=>'MainController@crawl']);
 $app->get('test', ['uses'=>'MainController@test']);
 $app->get('testMsg', ['uses'=>'MainController@sendTestMsg']);
+$app->get('amp/nogizaka46', ['uses'=>'MainController@post_list']);
 $app->get('amp/nogizaka46/{member_id}/{post_id}', ['uses'=>'MainController@generateAMP_NGZK']);

@@ -193,8 +193,17 @@
         </div>
     </div>
     </div>
-    <div class="content">{!! $post->content !!}</div>
+    <div class="content">{!! $post->preview !!} ......</div>
     <a href="{!! $post->inner_url !!}" class="readmore">阅读全文</a>
 </article>
 @endforeach
+<footer>
+    @if($current_page>1)
+        <a href="{!! url("/amp/nogizaka46/?page=".($current_page-1)) !!}" class="prev">PREV</a>
+    @endif
+
+    @if($has_more)
+        <a href="{!! url("/amp/nogizaka46/?page=".($current_page+1)) !!}" class="next">NEXT</a>
+    @endif
+</footer>
 @endsection

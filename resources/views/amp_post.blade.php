@@ -94,6 +94,9 @@
         footer .next {
             float: right;
         }
+        div.entrybody p {
+            height: auto;
+        }
     </style>
 @endsection
 

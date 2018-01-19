@@ -16,6 +16,8 @@ use App\Jobs\sendUpdateMessageJob;
 use App\Jobs\uploadImageJob;
 use App\Libraries\TelegramAPI;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use App\Libraries\HTTPUtil;
 use Illuminate\Support\Facades\Log;
@@ -34,7 +36,10 @@ class MainController extends Controller
         //
     }
 
-    public function post_list() {
+    public function post_list(Request $request) {
+        $start = microtime(true);
+        $page_size = 20;
+
         $schema_meta = [
             "@context"=>"http://schema.org",
             "@type"=>"BlogPosting",
@@ -56,16 +61,15 @@ class MainController extends Controller
             ],
             "dateModified"=>'',
         ];
-        $posts = DB::table('posts')
-            ->join('idol_members','posts.member_id','=','idol_members.id')
-            ->select('posts.*','idol_members.name','idol_members.profile_pic')
+        $posts = DB::table('ngzk_posts')
+            ->join('idol_members','ngzk_posts.member_id','=','idol_members.id')
+            ->select('ngzk_posts.*','idol_members.name','idol_members.profile_pic')
             ->where('idol_members.group_id',2)
-            ->orderBy('posts.posted_at','desc')
-            ->limit(10)
-            ->get();
+            ->orderBy('ngzk_posts.posted_at','desc')
+            ->paginate($page_size);
         foreach ($posts as $post) {
-            $desc = trim(strip_tags($post->content));
-            $post->content = mb_substr($desc,0,140)."......";
+            //$desc = trim(strip_tags($post->content));
+            //$post->content = mb_substr($desc,0,140)."......";
             $post->inner_url = url("/amp/nogizaka46/".$post->member_id."/".$post->id);
             if(empty($post->profile_pic)) {
                 $post->profile_pic = url("/images/nogizaka46_logo.jpg");
@@ -80,7 +84,7 @@ class MainController extends Controller
                 $schema_meta['datePublished'] = $schema_meta['dateModified'] = $date->format('Y-m-dTH:i:s+09:00');
             }
             if(!isset($schema_meta['image'])) {
-                $img = DB::table('post_images')->where('post_id',$post->id)->first();
+                $img = DB::table('ngzk_post_images')->where('post_id',$post->id)->first();
                 if(!empty($img)) {
                     $schema_meta['image'] = [
                         "@type"=>"ImageObject",
@@ -92,7 +96,15 @@ class MainController extends Controller
 
             }
         }
-        return view('ngzk_index',['posts'=>$posts,'logo'=>url("/images/nogizaka46_logo.jpg"),"schema"=>$schema_meta]);
+        $time_elapsed_secs = microtime(true) - $start;
+        var_dump($time_elapsed_secs);
+        return view('ngzk_index',[
+            'posts'=>$posts,
+            'logo'=>url("/images/nogizaka46_logo.jpg"),
+            "schema"=>$schema_meta,
+            "current_page"=>$posts->currentPage(),
+            "has_more"=>$posts->hasMorePages()
+        ]);
     }
 
     //
@@ -115,14 +127,38 @@ class MainController extends Controller
         }
     }
     public function test() {
-        dispatch((new getNGZKMemberPost(1,201801, 0))->delay(1));
+        var_dump(123);exit;
+        ini_set('max_execution_time', 0); //0=NOLIMIT
+        set_time_limit(0);
+        header( 'Content-type: text/html; charset=utf-8' );
+        //dispatch((new getNGZKMemberPost(1,201801, 0))->delay(1));
         //dispatch( new sendEditMessage("309781356", "307558399", "21253", "test2") );
+        $posts = DB::table('ngzk_posts')->select('id','content')->where('id','<',100)->orderBy('id','asc')->get();
+        //DB::table('ngzk_posts')->where('id','<',1000)->orderBy('id','asc')->chunk(100, function ($posts) {
+        foreach ($posts as $post) {
+            //
+
+            echo $post->id;
+            echo "<br />";
+            flush();
+            ob_flush();
+            preg_match_all("/http:\/\/[\w,\.\/]+(jpg|jpeg|png)/U", $post->content, $matches);
+            foreach ($matches[0] as $k=>$v) {
+                $url_hash = md5($v);
+                DB::table('ngzk_post_images')->where('original_url_hash',$url_hash)->update(['post_id'=>$post->id]);
+            }
+
+        }
+        //});
+
+//        $img = HTTPUtil::get('http://img.nogizaka46.com/blog/photos/uncategorized/2012/01/23/img_2527.jpg');
+//        return response($img)->header('Content-Type','image/png');
     }
 
     public function generateAMP_NGZK($member_id, $post_id) {
         $member = DB::table('idol_members')->where('id', $member_id)->where('group_id', 2)->first();
         if(empty($member)) return response('404');
-        $post = DB::table('posts')->where('id',$post_id)->where('member_id',$member->id)->first();
+        $post = DB::table('ngzk_posts')->where('id',$post_id)->where('member_id',$member->id)->first();
         if(empty($post) || $post->member_id != $member_id) return response('404');
 
         $post->content = preg_replace("/<content.*>/U",'', $post->content);
@@ -133,7 +169,7 @@ class MainController extends Controller
         //$post->content = str_replace('<font size="1">', '<div class="font-size-1">', $post->content);
         //$post->content = str_replace('</font>', '</div>', $post->content);
 
-        $uploaded_images = DB::table('post_images')->where('post_id', $post_id)->get();
+        $uploaded_images = DB::table('ngzk_post_images')->where('post_id', $post_id)->get();
         foreach ($uploaded_images as $img) {
             $replace_pattern = "<amp-img src=\"$img->url\" width=\"$img->width\" height=\"$img->height\" layout=\"responsive\"></amp-img>";
             $img->original_url = str_replace(['/','.'],['\/','\.'], $img->original_url);
@@ -157,8 +193,8 @@ class MainController extends Controller
         if(empty($member->profile_pic)) {
             $member->profile_pic = url("/images/nogizaka46_logo.png");
         }
-        $post->prev = DB::table('posts')->where('member_id', $post->member_id)->where('id','<',$post->id)->orderBy('id','desc')->value('id');
-        $post->next = DB::table('posts')->where('member_id', $post->member_id)->where('id','>',$post->id)->orderBy('id','asc')->value('id');
+        $post->prev = DB::table('ngzk_posts')->where('member_id', $post->member_id)->where('id','<',$post->id)->orderBy('id','desc')->value('id');
+        $post->next = DB::table('ngzk_posts')->where('member_id', $post->member_id)->where('id','>',$post->id)->orderBy('id','asc')->value('id');
         $desc = trim(strip_tags($post->content));
 
         $UTC = new \DateTimeZone("UTC");
@@ -189,7 +225,7 @@ class MainController extends Controller
             ]
         ];
 
-        $img = DB::table('post_images')->where('post_id',$post->id)->first();
+        $img = DB::table('ngzk_post_images')->where('post_id',$post->id)->first();
         if(!empty($img)) {
             $schema_meta['image'] = [
                 "@type"=>"ImageObject",
