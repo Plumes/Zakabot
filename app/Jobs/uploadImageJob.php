@@ -42,6 +42,12 @@ class uploadImageJob extends Job
     }
 
     private function uploadNGZKImage($post_id,$cdn_id,$original_url) {
+        $url_hash = md5($original_url);
+        $test_image = DB::table("ngzk_post_images")->where('original_url_hash',$url_hash)->where('post_id',$post_id)->first();
+        if(!empty($test_image)) {
+            Log::info("upload retry:".$original_url);
+            return 0;
+        }
         if(!empty($cdn_id)) {
             $img_url = "http://dcimg.awalker.jp/img1.php?id=".$cdn_id;
             $url_hash = md5($img_url);

@@ -88,4 +88,17 @@ class TelegramAPI {
         if($return_code=="200") return true;
         return $return_content;
     }
+
+    public function editMessage($chat_id, $message_id, $content) {
+        $api_url = $this->api_base."editMessageText";
+        $post_data = [
+            'chat_id' => $chat_id,
+            'message_id' => $message_id,
+            'text' => $content,
+            'parse_mode' => 'HTML'
+        ];
+        list($return_code, $return_content) = $this->http_post_data($api_url, json_encode($post_data));
+        if($return_code=="200") return true;
+        return $return_content;
+    }
 }
