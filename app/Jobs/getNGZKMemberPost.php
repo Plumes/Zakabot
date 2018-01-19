@@ -68,7 +68,7 @@ class getNGZKMemberPost extends Job
         $foot_nodes = $xpath->query("//div[@class='entrybottom']", $main_html);
         $this->total_number += $title_nodes->length;
         $dealt = 0;
-        if($title_nodes->length != $content_nodes->length || $title_nodes->length!=$foot_nodes->length) {
+        if($title_nodes->length<1 || $title_nodes->length != $content_nodes->length || $title_nodes->length!=$foot_nodes->length) {
             Log::error($month." ".$page_number." invalid data");
             dispatch( new sendUpdateMessageJob("309781356", "307558399", "page:".$this->page_number." month:".$this->month." invalid", false) );
         } else {
