@@ -110,7 +110,7 @@ class getNGZKMemberPost extends Job
                                 'url' => $url,
                                 'url_hash' => $url_hash,
                                 'content' => trim($content),
-                                'preview' => mb_substr($preview, 0, 140),
+                                'preview' => trim(mb_substr($preview, 0, 140)),
                                 'cover_image' => '',
                                 'cover_image_hash' => null,
                                 'posted_at' => $published_at,

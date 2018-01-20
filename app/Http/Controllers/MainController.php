@@ -68,8 +68,6 @@ class MainController extends Controller
             ->orderBy('ngzk_posts.posted_at','desc')
             ->paginate($page_size);
         foreach ($posts as $post) {
-            //$desc = trim(strip_tags($post->content));
-            //$post->content = mb_substr($desc,0,140)."......";
             $post->inner_url = url("/amp/nogizaka46/".$post->member_id."/".$post->id);
             if(empty($post->profile_pic)) {
                 $post->profile_pic = url("/images/nogizaka46_logo.jpg");
@@ -97,7 +95,6 @@ class MainController extends Controller
             }
         }
         $time_elapsed_secs = microtime(true) - $start;
-        var_dump($time_elapsed_secs);
         return view('ngzk_index',[
             'posts'=>$posts,
             'logo'=>url("/images/nogizaka46_logo.jpg"),
@@ -127,32 +124,24 @@ class MainController extends Controller
         }
     }
     public function test() {
-        var_dump(123);exit;
-        ini_set('max_execution_time', 0); //0=NOLIMIT
-        set_time_limit(0);
-        header( 'Content-type: text/html; charset=utf-8' );
-        //dispatch((new getNGZKMemberPost(1,201801, 0))->delay(1));
-        //dispatch( new sendEditMessage("309781356", "307558399", "21253", "test2") );
-        $posts = DB::table('ngzk_posts')->select('id','content')->where('id','<',100)->orderBy('id','asc')->get();
-        //DB::table('ngzk_posts')->where('id','<',1000)->orderBy('id','asc')->chunk(100, function ($posts) {
-        foreach ($posts as $post) {
-            //
-
-            echo $post->id;
-            echo "<br />";
-            flush();
-            ob_flush();
-            preg_match_all("/http:\/\/[\w,\.\/]+(jpg|jpeg|png)/U", $post->content, $matches);
-            foreach ($matches[0] as $k=>$v) {
-                $url_hash = md5($v);
-                DB::table('ngzk_post_images')->where('original_url_hash',$url_hash)->update(['post_id'=>$post->id]);
+        $posts = DB::table('posts')->where('id','>',8407)->whereBetween('member_id',[34,79])->get();
+        foreach ($posts as $v) {
+            $old_post_id = $v->id;
+            unset($v->id);
+            $preview = trim(strip_tags($v->content));
+            $v->preview = trim(mb_substr($preview, 0, 140));
+            $test_post = DB::table('ngzk_posts')->where('url_hash',$v->url_hash)->first();
+            if(empty($test_post)) {
+                $new_post_id = DB::table('ngzk_posts')->insertGetId((array)$v);
+                $images = DB::table('post_images')->where('post_id', $old_post_id)->get();
+                foreach ($images as $img) {
+                    unset($img->id);
+                    $img->post_id = $new_post_id;
+                    DB::table('ngzk_post_images')->insert((array)$img);
+                }
             }
 
         }
-        //});
-
-//        $img = HTTPUtil::get('http://img.nogizaka46.com/blog/photos/uncategorized/2012/01/23/img_2527.jpg');
-//        return response($img)->header('Content-Type','image/png');
     }
 
     public function generateAMP_NGZK($member_id, $post_id) {
@@ -173,9 +162,17 @@ class MainController extends Controller
         foreach ($uploaded_images as $img) {
             $replace_pattern = "<amp-img src=\"$img->url\" width=\"$img->width\" height=\"$img->height\" layout=\"responsive\"></amp-img>";
             $img->original_url = str_replace(['/','.'],['\/','\.'], $img->original_url);
-            $search_pattern = "/<a href=[^>]+><img[^>]+src=\"$img->original_url\"[^>]*><\/a>/U";
+            $search_pattern = "/<img[^>]+src=\"$img->original_url\"[^>]*>/U";
             $post->content = preg_replace($search_pattern,$replace_pattern,$post->content);
         }
+        //去除外部链接
+        $search_pattern = "/<a[^>]*>(<amp-img.+><\/amp-img>)<\/a>/U";
+        $post->content = preg_replace($search_pattern,"$1",$post->content);
+
+        //替换gif
+        $replace_pattern = "<amp-img src=\"$1.gif\" width='16' height='16'></amp-img>";
+        $search_pattern = "/<img[^>]+src=\"(\S+).gif\"[^>]*>/U";
+        $post->content = preg_replace($search_pattern,$replace_pattern,$post->content);
 
         $replace_pattern = '<div class="fixed-height-container"><a$1><amp-img class="contain" layout="fill" src="$2"></amp-img></a></div>';
         $post->content = preg_replace("/<a([^>]+)><img.+src=\"([\w,:,\/,\.]+)\".*><\/a>/U", $replace_pattern, $post->content);
@@ -241,7 +238,7 @@ class MainController extends Controller
                 "height"=>0
             ];
         }
-        return view('amp_post',['post'=>$post,'member'=>$member,"schema"=>$schema_meta]);
+        return view('ngzk_amp_post',['post'=>$post,'member'=>$member,"schema"=>$schema_meta]);
     }
 
     public function sendTestMsg() {

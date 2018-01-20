@@ -1,67 +1,9 @@
-@extends('amp_layout')
+@extends('ngzk_amp_layout')
 
 @section('title','乃木坂46 公式ブログ')
 @section('canonical','http://blog.nogizaka46.com/')
-@section('head')
-    <style amp-custom>
-        body {
-            background: #7e1083;
-        }
-        .header {
-            width: 100%;
-            height: 80px;
-            padding: 0 25px;
-            background-color: #fff;
-            box-shadow: 0 0 40px 0 rgba(0,0,0,0.5);
-            font-size: 14px;
-            box-sizing: border-box;
-        }
-        .header .logo {
-            margin-top: 10px;
-            width: 60px;
-            height: 60px;
-            position: relative;
-            background-color: rgb(241,241,243);
-            border-radius: 30px;
-            overflow: hidden;
-            display: inline-block;
-        }
-        .header .site-meta {
-            display: inline-block;
-            height: 60px;
-            margin-top: 10px;
-            vertical-align: top;
-            margin-left: 15px;
-        }
-        .header .site-name {
-            font-size: 1.5em;
-            color: #333333;
-            height: 30px;
-            line-height: 30px;
-        }
-        .header .site-desc {
-            font-size: 16px;
-            color: #777777;
-            height: 30px;
-            line-height: 30px;
-        }
-        p {
-            height: 1em;
-            line-height: 1em;
-            margin: 0;
-        }
-        div.font-size-1 {
-            font-size: 14px;
-            display: inline;
-        }
-        amp-img.contain img {
-            object-fit: contain;
-        }
-        .fixed-height-container {
-            position: relative;
-            width: 100%;
-            height: 300px;
-        }
+@section('custom-style')
+
         article {
             display: block;
             margin: 30px 15px 30px 15px;
@@ -85,11 +27,6 @@
             border-radius: 30px;
             overflow: hidden;
             float: left;
-        }
-        article .meta {
-            width: 100%;
-            padding-left: 70px;
-            box-sizing: border-box;
         }
         article .meta .author-name {
             height: 30px;
@@ -115,46 +52,6 @@
             white-space: nowrap;
             text-overflow:ellipsis;
         }
-        article div.content {
-
-        }
-        footer {
-            padding: 0 15px 20px 15px;
-            display: inline-block;
-            width: 100%;
-            background-color: #7e1083;;
-            box-sizing: border-box;
-        }
-        footer a {
-            padding: 10px 20px;
-            font-size: 14px;
-            background-color: #ffffff;
-            text-decoration: none;
-            box-shadow: 0 5px 40px 0 rgba(0,0,0,0.5);
-            border-radius: 2px;
-        }
-        footer .prev {
-            align-self: flex-start;
-        }
-        footer .next {
-            align-self: flex-end;
-            float: right;
-        }
-        .readmore {
-            font-size: 16px;
-            padding: 5px 10px;
-            border-radius: 3px;
-            border: 1px solid #7e1083;
-            color: #7e1083;
-            display: inline-block;
-            text-decoration: none;
-            margin-top: 20px;
-        }
-        a.readmore:visited {
-            text-decoration: none;
-            color: #7e1083;
-        }
-    </style>
 @endsection
 
 @section('body')

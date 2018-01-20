@@ -32,7 +32,7 @@ class getNGZKLatestPostJob extends Job
         $published_at->setTimeZone(new \DateTimeZone('Asia/Tokyo'));
         //防止执行重复的任务
         $post_url_hash = md5($post_url);
-        $check_post = DB::table('posts')->where('url_hash', $post_url_hash)->first();
+        $check_post = DB::table('ngzk_posts')->where('url_hash', $post_url_hash)->first();
         if(!empty($check_post)) return;
 
         preg_match('/com\/(\S+)\/20/', $post_url, $matches);
@@ -53,6 +53,7 @@ class getNGZKLatestPostJob extends Job
         if(empty($member)) return;
 
         $content_html = (string)$article->content;
+        $preview = trim(strip_tags($content_html));
 
         DB::table('idol_members')->where('id', $member->id)->update([
             'last_post_at'=>$published_at->format('Y-m-d H:i:s'),
@@ -67,9 +68,10 @@ class getNGZKLatestPostJob extends Job
         }
 
 
-        $post_id = DB::table('posts')->insertGetId([
+        $post_id = DB::table('ngzk_posts')->insertGetId([
                 'member_id' => $member->id,
                 'title' => $title,
+                'preview' => trim(mb_substr($preview, 0, 140)),
                 'url' => $post_url,
                 'url_hash' => $post_url_hash,
                 'content' => trim($content_html),
@@ -117,6 +119,11 @@ class getNGZKLatestPostJob extends Job
             }
 
         }
+
+        //去除外部链接
+        $search_pattern = "/<a[^>]*>(<img.+><\/img>)<\/a>/U";
+        $content = preg_replace($search_pattern,"$1",$content_html);
+        DB::table('ngzk_posts')->where('id',$post_id)->update(['content'=>$content]);
 
 
         $fans_id_list = DB::table('idol_fans_relation')->where('member_id', $member->id)->pluck('fan_id');

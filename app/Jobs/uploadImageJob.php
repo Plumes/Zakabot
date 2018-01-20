@@ -91,11 +91,9 @@ class uploadImageJob extends Job
             'created_at'=>date('Y-m-d H:i:s'),
             'updated_at'=>date('Y-m-d H:i:s')
         ];
-        if(empty($cdn_id)) {
-            DB::table('ngzk_post_images')->insert($img_data);
-        } else {
-            DB::table('post_images')->insert($img_data);
-        }
+
+        DB::table('ngzk_post_images')->insert($img_data);
+
 
         return ['url'=>$url,'file_size'=>$file_size,'size'=>$size,'original_url'=>$original_url];
     }
