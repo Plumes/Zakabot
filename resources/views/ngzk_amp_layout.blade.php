@@ -132,7 +132,7 @@
     @yield('body')
     <amp-sidebar id="sidebar" layout="nodisplay" side="right">
         <ul class="site-menu">
-            <li><div class="ampclose-btn" on="tap:sidebar.close"></div></li>
+            <li><div role="button" tabindex="1" class="ampclose-btn" on="tap:sidebar.close"></div></li>
             <li><a href="/">首页</a></li>
             <li><a href="https://telegram.me/NGZK46DiaryBot" target="_blank" class="mini">Telegram 订阅</a></li>
         </ul>
