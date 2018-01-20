@@ -39,9 +39,10 @@ class getNGZKLatestPostJob extends Job
         $official_id = $matches[1];
         $member = null;
         if($official_id=="third") {
-            $third_member_names = ['伊藤理々杏','岩本蓮加','梅澤美波','大園桃子','久保史緒里','阪口珠美','佐藤楓','佐藤 楓','中村麗乃','向井葉月','山下美月','吉田綾乃クリスティー','与田祐希'];
+            $t_title = str_replace(' ','', $title);
+            $third_member_names = ['伊藤理々杏','岩本蓮加','梅澤美波','大園桃子','久保史緒里','阪口珠美','佐藤楓','中村麗乃','向井葉月','山下美月','吉田綾乃クリスティー','与田祐希'];
             foreach ($third_member_names as $v) {
-                if(mb_strpos($title, $v)!==false) {
+                if(mb_strpos($t_title, $v)!==false) {
                     $v = str_replace(' ', '', $v);
                     $member = DB::table('idol_members')->where('group_id', 2)->where('name', $v)->first();
                     break;
