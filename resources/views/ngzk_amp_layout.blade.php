@@ -89,12 +89,17 @@
             box-sizing: border-box;
         }
         footer a {
+            color: #7e1083;
             padding: 10px 20px;
             font-size: 14px;
             background-color: #ffffff;
             text-decoration: none;
             box-shadow: 0 5px 40px 0 rgba(0,0,0,0.5);
             border-radius: 2px;
+        }
+        footer a:visited {
+            text-decoration: none;
+            color: #7e1083;
         }
         footer .prev {
             align-self: flex-start;
