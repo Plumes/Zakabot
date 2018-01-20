@@ -124,23 +124,12 @@ class MainController extends Controller
         }
     }
     public function test() {
-        $posts = DB::table('posts')->where('id','>',8407)->whereBetween('member_id',[34,79])->get();
-        foreach ($posts as $v) {
-            $old_post_id = $v->id;
-            unset($v->id);
-            $preview = trim(strip_tags($v->content));
-            $v->preview = trim(mb_substr($preview, 0, 140));
-            $test_post = DB::table('ngzk_posts')->where('url_hash',$v->url_hash)->first();
-            if(empty($test_post)) {
-                $new_post_id = DB::table('ngzk_posts')->insertGetId((array)$v);
-                $images = DB::table('post_images')->where('post_id', $old_post_id)->get();
-                foreach ($images as $img) {
-                    unset($img->id);
-                    $img->post_id = $new_post_id;
-                    DB::table('ngzk_post_images')->insert((array)$img);
-                }
-            }
-
+        $members = DB::table('idol_members')->whereBetween('id',[34,67])->get();
+        foreach ($members as $v) {
+            $e_name = $v->official_id;
+            $e_name = explode('.',$e_name);
+            $profile_pic = 'http://img.nogizaka46.com/blog/pic/'.$e_name[1].$e_name[0].'_list.jpg';
+            DB::table('idol_members')->where('id',$v->id)->update(['profile_pic'=>$profile_pic]);
         }
     }
 
