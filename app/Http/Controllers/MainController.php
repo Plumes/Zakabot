@@ -192,7 +192,7 @@ class MainController extends Controller
         $schema_meta = [
             "@context"=>"http://schema.org",
             "@type"=>"BlogPosting",
-            "mainEntityOfPage"=>url("/amp/nogizaka46/".$member->id."/".$post->id),
+            "mainEntityOfPage"=>$post->url,
             "headline"=>"乃木坂46 ".$member->name." ".$post->title." ".mb_substr($desc,0,30),
             "datePublished"=>str_replace(' ','T',$post->posted_at)."+09:00",
             "dateModified"=>str_replace(' ','T',$post->posted_at)."+09:00",
