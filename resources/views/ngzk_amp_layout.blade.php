@@ -102,10 +102,9 @@
             color: #7e1083;
         }
         footer .prev {
-            align-self: flex-start;
+            float: left;
         }
         footer .next {
-            align-self: flex-end;
             float: right;
         }
         .readmore {
