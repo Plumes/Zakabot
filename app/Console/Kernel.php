@@ -74,7 +74,7 @@ class Kernel extends ConsoleKernel
                 if(empty($post_url)) continue;
                 $post_url_hash = md5($post_url);
 
-                $post = DB::table('posts')->where('url_hash', $post_url_hash)->first();
+                $post = DB::table('ngzk_posts')->where('url_hash', $post_url_hash)->first();
                 if(!empty($post)) continue;
                 $delay = $i++*5+1;
                 Log::info("new post:".$post_url." appointment at ".Date("m-d H:i:s", time()+$delay));
